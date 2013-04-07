@@ -1,0 +1,144 @@
+<StyleCopSettings Version="105">
+  <SourceFileList>
+	<!-- Disable StyleCop for SharpUnit. -->
+    <SourceFile>Assert.cs</SourceFile>
+    <SourceFile>TestCase.cs</SourceFile>
+	<SourceFile>TestException.cs</SourceFile>
+	<SourceFile>TestReporter.cs</SourceFile>
+	<SourceFile>TestResult.cs</SourceFile>
+	<SourceFile>TestSuite.cs</SourceFile>
+	<SourceFile>UnitTest.cs</SourceFile>
+	
+	<!-- Disable StyleCop for AnBSoft editors. -->
+	<SourceFile>SpriteTimelineEditor.cs</SourceFile>
+    <SourceFile>UICtlEditor.cs</SourceFile>
+	<SourceFile>UIPanelEditor.cs</SourceFile>
+	
+	<SourceFile>AEButtonInspector.cs</SourceFile>
+	<SourceFile>UIActionBtnInspector.cs</SourceFile>
+    <SourceFile>UIBistateInteractivePanelInspector.cs</SourceFile>
+	<SourceFile>UIBtnChangePanelInspector.cs</SourceFile>
+	<SourceFile>UIBtnLoadSceneInspector.cs</SourceFile>
+	<SourceFile>UIBtnWWWInspector.cs</SourceFile>
+    <SourceFile>UIButton3DInspector.cs</SourceFile>
+	<SourceFile>UIButtonInspector.cs</SourceFile>
+	<SourceFile>UICtlInspector.cs</SourceFile>
+	<SourceFile>UIInteractivePanelInspector.cs</SourceFile>
+    <SourceFile>UIListButtonInspector.cs</SourceFile>
+	<SourceFile>UIListItemInspector.cs</SourceFile>
+	<SourceFile>UIPanelBaseInspector.cs</SourceFile>
+	<SourceFile>UIPanelInspector.cs</SourceFile>
+    <SourceFile>UIPanelTabInspector.cs</SourceFile>
+	<SourceFile>UIProgressBarInspector.cs</SourceFile>
+	<SourceFile>UIRadioBtn3DInspector.cs</SourceFile>
+	<SourceFile>UIRadioBtnInspector.cs</SourceFile>
+    <SourceFile>UISliderInspector.cs</SourceFile>
+	<SourceFile>UIStateToggleBtn3DInspector.cs</SourceFile>
+	<SourceFile>UIStateToggleBtnInspector.cs</SourceFile>
+	<SourceFile>UITextFieldInspector.cs</SourceFile>
+	
+	<SourceFile>About_EZ_GUI.cs</SourceFile>
+	<SourceFile>About_SM2.cs</SourceFile>
+    <SourceFile>BuildAtlases.cs</SourceFile>
+	<SourceFile>CopyControl.cs</SourceFile>
+	<SourceFile>CopyTransitions.cs</SourceFile>
+	<SourceFile>SetRenderCamera.cs</SourceFile>
+    <SourceFile>SpriteSizer.cs</SourceFile>
+
+	<!-- Disable StyleCop for Prime31 editors. -->
+	<SourceFile>P31MenuItem.cs</SourceFile>
+	<SourceFile>PListEditor.cs</SourceFile>
+	<SourceFile>Prime31PlistHelperWizard.cs</SourceFile>
+
+    <Settings>
+		<GlobalSettings>
+		  <BooleanProperty Name="RulesEnabledByDefault">False</BooleanProperty>
+		</GlobalSettings>
+    </Settings>
+  </SourceFileList>
+  <GlobalSettings>
+    <StringProperty Name="MergeSettingsFiles">NoMerge</StringProperty>
+  </GlobalSettings>
+  <Analyzers>
+    <Analyzer AnalyzerId="StyleCop.CSharp.DocumentationRules">
+      <Rules>
+        <Rule Name="DocumentationTextMustContainWhitespace">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="ConstructorSummaryDocumentationMustBeginWithStandardText">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="DestructorSummaryDocumentationMustBeginWithStandardText">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="FileMustHaveHeader">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">True</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="FileHeaderMustShowCopyright">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">True</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="FileHeaderMustHaveCopyrightText">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">True</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="FileHeaderMustContainFileName">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">True</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="FileHeaderFileNameDocumentationMustMatchFileName">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">True</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="FileHeaderMustHaveValidCompanyText">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">True</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="FileHeaderFileNameDocumentationMustMatchTypeName">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">True</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="PropertySummaryDocumentationMustMatchAccessors">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="PropertySummaryDocumentationMustOmitSetAccessorWithRestrictedAccess">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+      </Rules>
+      <AnalyzerSettings />
+    </Analyzer>
+	<Analyzer AnalyzerId="StyleCop.CSharp.ReadabilityRules">
+      <Rules>
+        <Rule Name="UseBuiltInTypeAlias">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+		<Rule Name="UseStringEmptyForEmptyStrings">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">False</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+      </Rules>
+      <AnalyzerSettings />
+    </Analyzer>
+  </Analyzers>
+</StyleCopSettings>

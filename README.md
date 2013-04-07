@@ -11,7 +11,7 @@ This Sublime Text 2 package adds advanced building capabilities (advanced as in 
 * Command preconfiguration
 * Per command regular expressions without order dependancy
 * Probably maybe mostly platform independant
-* 4 preconfigured types of phases 
+* 4 preconfigured types of phases
   - 'command' to run a command
   - 'copy' to copy files around
   - 'solution' to perform a build using a .sln file (because I have to work with this sh**). This wil
@@ -114,3 +114,10 @@ OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABIL
 WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
 OF SUCH DAMAGE.
+
+# Derived Work
+This software includes compiled versions of [StyleCop](http://stylecop.codeplex.com/),
+governed by its own license (see stylecop/License.rtf) and
+[StyleCop-Cmd](http://www.nichesoftware.co.nz/software/stylecop-cmd),
+licensed under the MIT license. For task execution, it builds upon the Sublime Text
+exec.py command executor, found in the <package_directory>/Default/exec.py.
