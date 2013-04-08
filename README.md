@@ -33,11 +33,11 @@ Your project file should look something like this:
     ],
     "build_systems": [
         {
-            "name": "Build Solution [Debug]" // The name, displayed in the build system selection
-            "configuration": "Debug",        // The configuration to use, this enables or disables phases
-            "target": "advanced_builder",    // This build system definition uses Advanced Build System
-            "quiet": true,                   // This will only display errors and phase changes
-            "task": "Build"                  // Build or Clean, Build is the default, if nothing is specified
+            "name": "Build Solution [Debug]", // The name, displayed in the build system selection
+            "configuration": "Debug",         // The configuration to use, this enables or disables phases
+            "target": "advanced_builder",     // This build system definition uses Advanced Build System
+            "quiet": true,                    // This will only display errors and phase changes
+            "task": "Build"                   // Build or Clean, Build is the default, if nothing is specified
         }
         // ... Additional build systems for additional configurations
     ],
@@ -46,11 +46,11 @@ Your project file should look something like this:
             {
                 "name": "StyleCop rules",                        // Displayed in the output
                 "type": "stylecop",                              // The type of build phase
-                "configurations": ["Release", "Debug"]           // Include this phase for Debug and Release configurations
+                "configurations": ["Release", "Debug"],          // Include this phase for Debug and Release configurations
                 "path": "${project_path}",                       // The path, that should be scanned for C# source files
                 "settings": "${project_path}/Settings.StyleCop", // The path to the settings
                 "stop_on_error": false,                          // Whether to stop building, if errors are found
-                "skip_filters": ["AssemblyInfo.cs$"],            // Don't include these files
+                "skip_filters": ["AssemblyInfo.cs$"]             // Don't include these files
                 // ... For additional options, please see common/BuildPhase.py and build_phases/StyleCopPhase.py
             },
             {
@@ -59,15 +59,15 @@ Your project file should look something like this:
                 "solution": "${folder}/MySolution.sln" // The path to the file
                 // ... For additional options, please see common/BuildPhase.py and build_phases/BuildSolutionPhase.py
             },
-        		{
-        			  "name": "By your command",               // Displayed in the output
-        			  "type": "command",                       // Run a command
-      				  "configurations": ["Release", "Debug"],  // The configurations, this applies to
-        			  "path_selector": "${project_path}",      // Run this phase only, from files in this path
-      				  "command": [ "echo", "'Hello World!'" ], // The command to run
-      				  "stop_on_error": false                   // Stop building, if an error occurs in this phase
+            {
+                "name": "By your command",               // Displayed in the output
+                "type": "command",                       // Run a command
+                "configurations": ["Release", "Debug"],  // The configurations, this applies to
+                "path_selector": "${project_path}",      // Run this phase only, from files in this path
+                "command": [ "echo", "'Hello World!'" ], // The command to run
+                "stop_on_error": false                   // Stop building, if an error occurs in this phase
                 // ... For additional options, please see common/BuildPhase.py and build_phases/RunCommandPhase.py
-      			}
+            }
             // Copy files phases can be here too, but they are untested!
             // ... Additional build phases, these can be mixed and matched as you like
         ]
