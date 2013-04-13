@@ -257,6 +257,33 @@ class OutputWindowController(ProcessListener):
             print message
         self.append_data(self.proc, message + "\n")
 
+    def _build_message(self, proc, importance, **kwargs):
+        # Add the importance to the arguments
+        kwargs["importance"] = importance
+        message = "[%(importance)s]"
+
+        path = kwargs.get("file")
+        if(path is not None):
+            # There is a path, make sure it is relative
+            path = self.get_relative_path(proc.working_dir, path)
+            kwargs["file"] = path
+
+            # Add the file information and look for lines
+            message += ": %(file)s"
+            line = kwargs.get("line")
+            column = kwargs.get("column")
+
+            if(line is not None):
+                if(column is None):
+                    # Use 0 as default column for jump-to-line support
+                    kwargs["column"] = 0
+
+                # Add the file and line placeholders to the message
+                message += " (%(line)s, %(column)s):"
+
+        message += " %(message)s"
+        return message % kwargs
+
     def append_data(self, proc, data):
         if(proc is not None) and (proc != self.proc):
             # This is not our current process, don't do anything.
@@ -307,12 +334,10 @@ class OutputWindowController(ProcessListener):
                 err_match = re.match(str(proc.error_regex), line, re.UNICODE)
 
                 if(err_match is not None):
-                    print "Error in: %s" % line
+                    print "Error in: %s" % line.strip()
                     error_data = err_match.groupdict()
-                    path = self.get_relative_path(proc.working_dir, error_data.get("file"))
-                    error_data["file"] = path
                     self.has_errors = True
-                    line = "[ERROR]: %(file)s (%(line)s, %(column)s): %(message)s" % error_data
+                    line = self._build_message(proc, "ERROR", **error_data)
                     self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
                     continue
 
@@ -321,16 +346,14 @@ class OutputWindowController(ProcessListener):
                 warn_match = re.match(str(proc.warning_regex), line, re.UNICODE)
 
                 if(warn_match is not None):
-                    print "Warning in: %s" % line
+                    print "Warning in: %s" % line.strip()
                     warning_data = warn_match.groupdict()
-                    path = self.get_relative_path(proc.working_dir, warning_data.get("file"))
-                    warning_data["file"] = path
 
                     if(proc.warnings_as_errors):
                         self.has_errors = True
-                        line = "[ERROR]: %(file)s (%(line)s, %(column)s): %(message)s" % warning_data
+                        line = self._build_message(proc, "ERROR", **warning_data)
                     else:
-                        line = "[WARNING]: %(file)s (%(line)s, %(column)s): %(message)s" % warning_data
+                        line = self._build_message(proc, "WARNING", **warning_data)
 
                     self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
                     continue

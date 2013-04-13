@@ -23,11 +23,6 @@
             "copy": {
                 "cmd": ["cp"]
             },
-            "stylecop_print": {
-                "cmd": ["/usr/bin/env", "python", "${home}/.local/scripts/print_stylecop_results.py"],
-                "error_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*error\\:\\s*(?P<message>.*)$",
-                "warning_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*warning\\:\\s*(?P<message>.*)$"
-            },
             "stylecop": {
                 "env": {
                     "MONO_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib/mono/2.0",
@@ -44,8 +39,8 @@
                         "build",
                         "--target:${task:Build}",
                         "--configuration:${configuration}"],
-                "error_regex": "^[\\s\\t]*(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\):\\s*error\\s(?P<message>.*)$",
-                "warning_regex": "^[\\s\\t]*(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\):\\s*warning\\s(?P<message>.*)$"
+                "error_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\):\\s*)?error\\s(?P<message>.*)$",
+                "warning_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\):\\s*)?warning\\s(?P<message>.*)$"
             },
             "build_solution_xbuild": {
                 "cmd": ["/Applications/Unity/MonoDevelop.app/Contents/Frameworks/Mono.framework/Commands/xbuild",
