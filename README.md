@@ -9,7 +9,7 @@ This Sublime Text 2 package adds advanced building capabilities (advanced as in 
 * Build configuration support to enable or disable certain phases
 * Build task support to enable or disable certain phases per task
 * Jump to line support for error output.
-* Command preconfiguration with
+* Command preconfiguration for multiple projects.
 * Per command regular expressions for errors, warnings and messages without order dependancy
 * 5 preconfigured types of phases
   - 'command' to run a command
