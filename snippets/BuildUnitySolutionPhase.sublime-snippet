@@ -1,0 +1,13 @@
+<snippet>
+    <content><![CDATA[
+
+{
+    "type": "unity",
+    "name": "Build Unity Solution",
+    "solution": "${1:solution path}",
+}
+]]></content>
+    <description>Unity solution build phase</description>
+    <tabTrigger>advb_unity</tabTrigger>
+    <scope>source.json</scope>
+</snippet>

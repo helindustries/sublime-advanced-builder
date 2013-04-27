@@ -1,0 +1,6 @@
+<snippet>
+    <content><![CDATA["stop_on_error": ${1:true}]]></content>
+    <description>(Optionaly) set whether or not to stop, if an error occurs.</description>
+    <tabTrigger>advb_opt_stop</tabTrigger>
+    <scope>source.json</scope>
+</snippet>

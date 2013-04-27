@@ -1,0 +1,31 @@
+<snippet>
+    <content><![CDATA[{
+    "configuration": "${1:configuration}",
+    "working_dir": "\${project_path:\${folder}}",
+    "file_regex": "^([\\\\d\\\\w:\\\\\\\\\\\\.-]*)\\\\((\\\\d+),(\\\\d+)\\\\)\\\\s*(.*)\$",
+    "target": "advanced_builder",
+    "quiet": ${2:true},
+    "variants": [
+        {
+            "task": "Run",
+            "name": "Run"
+        },
+        {
+            "task": "Clean",
+            "name": "Clean"
+        },
+        {
+            "name": "Build All",
+            "build_all": true
+        },
+        {
+            "task": "Clean",
+            "name": "Clean All",
+            "build_all": true
+        }
+    ]
+}]]></content>
+    <description>Advanced build system</description>
+    <tabTrigger>advb_build</tabTrigger>
+    <scope>source.json</scope>
+</snippet>

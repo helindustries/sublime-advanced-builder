@@ -1,0 +1,6 @@
+<snippet>
+    <content><![CDATA["configurations": [ ${1:configuration_list} ]]]></content>
+    <description>The (optional) configurations, the phase should be executed in.</description>
+    <tabTrigger>advb_opt_configs</tabTrigger>
+    <scope>source.json</scope>
+</snippet>

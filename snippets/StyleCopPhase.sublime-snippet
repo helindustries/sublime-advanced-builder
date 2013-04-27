@@ -1,0 +1,15 @@
+<snippet>
+    <content><![CDATA[
+
+{
+    "type": "stylecop",
+    "name": "StyleCop checks",
+    "settings": "${1:settings path}",
+    "path": "${2:base path}",
+    "skip_filters": [ "AssemblyInfo.cs\$" ]
+}
+]]></content>
+    <description>Copy files build phase</description>
+    <tabTrigger>advb_stylecop</tabTrigger>
+    <scope>source.json</scope>
+</snippet>

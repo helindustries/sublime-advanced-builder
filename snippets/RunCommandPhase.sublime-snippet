@@ -1,0 +1,13 @@
+<snippet>
+    <content><![CDATA[
+
+{
+    "type": "command",
+    "name": "Run Command",
+    "command": [ ${1:command_parts} ]
+}
+]]></content>
+    <description>Copy files build phase</description>
+    <tabTrigger>advb_command</tabTrigger>
+    <scope>source.json</scope>
+</snippet>

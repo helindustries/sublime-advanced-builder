@@ -1,0 +1,6 @@
+<snippet>
+    <content><![CDATA["path_selector": "${1:the path the phase applies to}"]]></content>
+    <description>The (optional) path, the phase applies to.</description>
+    <tabTrigger>advb_opt_path</tabTrigger>
+    <scope>source.json</scope>
+</snippet>

@@ -1,0 +1,14 @@
+<snippet>
+    <content><![CDATA[
+
+{
+    "type": "copy",
+    "name": "Copy Files",
+    "sources": [ ${1:sources_list} ],
+    "destination": "${2:destination}"
+}
+]]></content>
+    <description>Copy files build phase</description>
+    <tabTrigger>advb_copy</tabTrigger>
+    <scope>source.json</scope>
+</snippet>

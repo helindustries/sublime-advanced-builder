@@ -1,0 +1,6 @@
+<snippet>
+    <content><![CDATA["tasks": [ ${1:tasks_list} ]]]></content>
+    <description>The (optional) tasks, the phase should be executed in.</description>
+    <tabTrigger>advb_opt_tasks</tabTrigger>
+    <scope>source.json</scope>
+</snippet>

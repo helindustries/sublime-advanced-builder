@@ -1,0 +1,13 @@
+<snippet>
+    <content><![CDATA[
+
+{
+    "type": "solution",
+    "name": "Build Solution",
+    "solution": "${1:solution path}",
+}
+]]></content>
+    <description>Solution build phase</description>
+    <tabTrigger>advb_solution</tabTrigger>
+    <scope>source.json</scope>
+</snippet>
