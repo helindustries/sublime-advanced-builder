@@ -77,6 +77,7 @@ class AsyncBuildProcess(object):
         self.working_dir = value_or_default(kwargs, "working_dir", unicode, "")
         self.error_regex = value_or_default(kwargs, "error_regex", unicode, None)
         self.warning_regex = value_or_default(kwargs, "warning_regex", unicode, None)
+        self.message_regex = value_or_default(kwargs, "message_regex", unicode, None)
         self.line_regex = value_or_default(kwargs, "line_regex", unicode, None)
         self.warnings_as_errors = value_or_default(kwargs, "warnings_as_errors", bool, False)
         self.completion_callback = kwargs.get("completion_callback")
@@ -168,10 +169,15 @@ class OutputWindowController(ProcessListener):
             # Try not to call get_output_panel until the regexes are assigned
             self.output_view = self.window.get_output_panel("advanced_builder")
 
-        working_dir = os.path.dirname(self.window.active_view().file_name())
+        self.working_dir = os.path.dirname(self.window.active_view().file_name())
+        for folder in self.window.folders():
+            if(self.working_dir.startswith(folder)):
+                self.working_dir = folder
+                break;
+
         self.output_view.settings().set("result_file_regex", "^\[[A-Z\s_]+\]: ([\/\d\s\w:\\\.-]*) \((\d+), (\d+)\):\s.*$")
         self.output_view.settings().set("result_line_regex", "^.*\((\d+), (\d+)\).*$")
-        self.output_view.settings().set("result_base_dir", working_dir)
+        self.output_view.settings().set("result_base_dir", self.working_dir)
 
         # Call get_output_panel a second time after assigning the above
         # settings, so that it'll be picked up as a result buffer
@@ -269,7 +275,7 @@ class OutputWindowController(ProcessListener):
         path = kwargs.get("file")
         if(path is not None):
             # There is a path, make sure it is relative
-            path = self.get_relative_path(proc.working_dir, path)
+            path = self.get_relative_path(self.working_dir, path)
             kwargs["file"] = path
 
             # Add the file information and look for lines
