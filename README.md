@@ -88,8 +88,11 @@ Get it from [github](https://github.com/ranthor/sublime-advanced-builder/), as t
 [Package Control](http://wbond.net/sublime\_packages/package\_control) and I don't have any intention of adding
 it there any time soon, as this code is not tested nearly enough to warrant a wide-scale release.
 
-If you have problems with this plugin or think it could use some improvements, contact me via GitHub. No promises
-though.
+## Unknown issues
+This thing has been tested by not even a handful of people, exclusively using Mac OS X as their development
+platform of choice. So there will be a lot of issues still hidden away, especially in regards to Windows or
+Linux as a development platform. If you have problems with this plugin or think it could use some improvements,
+please contact me via GitHub. No promises though.
 
 ## Known issues
 Too many.
