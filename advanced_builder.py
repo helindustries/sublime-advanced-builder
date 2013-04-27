@@ -368,6 +368,15 @@ class OutputWindowController(ProcessListener):
                     self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
                     continue
 
+            if(proc.message_regex is not None):
+                # got an error regex, match it
+                msg_match = re.match(str(proc.message_regex), line, re.UNICODE)
+
+                if(msg_match is not None):
+                    line = self._build_message(proc, None, **msg_match.groupdict())
+                    self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
+                    continue
+
             if(not self.quiet):
                 self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
 
