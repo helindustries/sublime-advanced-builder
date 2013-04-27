@@ -162,8 +162,9 @@ class AsyncBuildProcess(object):
                 break
 
 class OutputWindowController(ProcessListener):
-    def init(self, command, encoding = "utf-8", quiet = False, jump_to_error = True):
+    def init(self, command, task, encoding = "utf-8", quiet = False, jump_to_error = True):
         self.window = command.window
+        self.task = task
 
         if not hasattr(self, 'output_view'):
             # Try not to call get_output_panel until the regexes are assigned
@@ -419,13 +420,13 @@ class OutputWindowController(ProcessListener):
         errs = self.output_view.find_all_results()
         message = ""
         if(len(errs) != 0):
-            message = "[Build finished with %d errors]" % len(errs)
+            message = "[%s finished with %d errors]" % (self.task, len(errs))
             self.has_errors = True
         elif(self.has_errors):
-            message = "[Build finished with errors]"
+            message = "[%s finished with errors]" % (self.task)
             self.has_errors = True
         else:
-            message = "[Build successful]"
+            message = "[%s successful]" % (self.task)
 
         self.write(message)
         sublime.status_message(message)

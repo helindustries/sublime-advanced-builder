@@ -218,7 +218,11 @@ class AdvancedBuilderSettings(object):
         """
         Returns the currently active task
         """
-        return self.build_settings.get("task")
+        task = self.build_settings.get("task")
+        if(task is None):
+            task = "Build"
+
+        return task
 
     def active_file(self):
         """

@@ -71,7 +71,7 @@ class BuildSolutionPhase(BuildPhase):
         if(not path.endswith("/")):
             path += "/"
 
-        return (self.configurations is None or self.settings.active_configuration() in self.configurations) \
+        return self.check_configuration() and self.check_task() \
                 and (path is None or self.settings.active_file().startswith(path))
 
     def get_task(self):

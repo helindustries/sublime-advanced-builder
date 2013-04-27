@@ -60,6 +60,12 @@ class BuildPhase(object):
         if(self.configurations == []):
             # This phase won't do anything, warn.
             self._invalidate("No configuration enabled")
+        if(self.tasks is None):
+            # This phase does not specify a task, default to Build-only.
+            self.tasks = ["Build"]
+        if(self.tasks == []):
+            # This phase won't do anything, warn.
+            self._invalidate("No tasks enabled")
 
     def is_valid(self):
         """
@@ -84,6 +90,12 @@ class BuildPhase(object):
 
         self._is_valid = False
         sublime.error_message(message + " skipping it!")
+
+    def check_configuration(self):
+        return (self.configurations is None or self.settings.active_configuration() in self.configurations)
+
+    def check_task(self):
+        return (self.tasks is None or self.settings.active_task() in self.tasks)
 
     def should_run(self, target, current_config):
         """
