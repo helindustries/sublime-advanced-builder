@@ -161,7 +161,7 @@ class OutputWindowController(ProcessListener):
             self.output_view = self.window.get_output_panel("advanced_builder")
 
         working_dir = os.path.dirname(self.window.active_view().file_name())
-        self.output_view.settings().set("result_file_regex", "^\[[A-Z]+\]: ([\/\d\w:\\\.-]*) \((\d+), (\d+)\):\s.*$")
+        self.output_view.settings().set("result_file_regex", "^\[[A-Z\s_]+\]: ([\/\d\s\w:\\\.-]*) \((\d+), (\d+)\):\s.*$")
         self.output_view.settings().set("result_line_regex", "^.*\((\d+), (\d+)\).*$")
         self.output_view.settings().set("result_base_dir", working_dir)
 
