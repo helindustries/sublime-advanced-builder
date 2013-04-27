@@ -1,0 +1,27 @@
+// The build config for easier build system switching
+{
+    "configuration": "Release",
+    "working_dir": "${project_path:${folder}}",
+    "file_regex": "^([\\d\\w:\\\\\\.-]*)\\((\\d+),(\\d+)\\)\\s*(.*)$",
+    "target": "advanced_builder",
+    "quiet": true,
+    "variants": [
+        {
+            "task": "Run",
+            "name": "Run"
+        },
+        {
+            "task": "Clean",
+            "name": "Clean"
+        },
+        {
+            "name": "Build All",
+            "build_all": true
+        },
+        {
+            "task": "Clean",
+            "name": "Clean All",
+            "build_all": true
+        }
+    ]
+}
