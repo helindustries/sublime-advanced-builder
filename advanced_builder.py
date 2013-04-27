@@ -292,6 +292,7 @@ class OutputWindowController(ProcessListener):
                 message += " (%(line)s, %(column)s):"
 
         message += " %(message)s"
+        message = message.strip()
         return message % kwargs
 
     def append_data(self, proc, data):
