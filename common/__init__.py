@@ -1,1 +1,4 @@
-__ALL__ = ["build_phase"]
+__all__ = ["BuildPhase", "AdvancedBuilderSettings"]
+
+from build_phase import BuildPhase
+from settings import AdvancedBuilderSettings
