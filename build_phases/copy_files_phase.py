@@ -26,6 +26,7 @@
 The copy files build phase.
 """
 import os.path
+import glob
 from common import BuildPhase
 
 class CopyFilesPhase(BuildPhase):
@@ -71,9 +72,15 @@ class CopyFilesPhase(BuildPhase):
                 and (path is None or self.settings.active_file().startswith(path))
 
     def _expand_files(self, file_list):
-        for i in range(len(file_list)):
-            file_list[i] = self.settings.expand_placeholders(file_list[i])
-        return file_list
+        path_list = []
+        for path in file_list:
+            # Make the necessary expansions for Sublime Text, user directories
+            # environment variables and placeholders, in that order
+            path = self.settings.expand_placeholders(path)
+            path = os.path.expanduser(path)
+            path = os.path.expandvars(path)
+            path_list += glob.glob(path)
+        return path_list
 
     def get_task(self):
         """
