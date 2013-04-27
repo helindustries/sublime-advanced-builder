@@ -41,6 +41,14 @@ import sublime_plugin
 from common import AdvancedBuilderSettings
 from build_phases import BuildSolutionPhase, BuildUnitySolutionPhase, CopyFilesPhase, StyleCopPhase, RunCommandPhase
 
+supported_build_phases = {
+    "solution": BuildSolutionPhase,
+    "unity": BuildUnitySolutionPhase,
+    "copy": CopyFilesPhase,
+    "stylecop": StyleCopPhase,
+    "command": RunCommandPhase
+}
+
 def value_or_default(dictionary, key, expect_type, default):
     value = dictionary.get(key)
     if(value is None) or (not isinstance(value, expect_type)):
@@ -508,21 +516,16 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
 
         @returns The appropriet, initialized phase for the configured type or None, if none exists.
         """
+        # Resolve the type of the phase
         phase_type = phase_config.get("type")
-
-        phase = None
-        if(phase_type == AdvancedBuilderCommand.PHASE_COPY):
-            phase = CopyFilesPhase()
-        elif(phase_type == AdvancedBuilderCommand.PHASE_SOLUTION):
-            phase = BuildSolutionPhase()
-        elif(phase_type == AdvancedBuilderCommand.PHASE_STYLECOP):
-            phase = StyleCopPhase()
-        elif(phase_type == AdvancedBuilderCommand.PHASE_COMMAND):
-            phase = RunCommandPhase()
-        else:
-            #sublime.error_message("Unknown build phase type: " + phase_type + " ignoring it!")
+        if(phase_type is None):
             return None
 
-        phase.init(self._settings, **phase_config)
+        # Resolve the class of the type
+        phase_class = supported_build_phases.get(phase_type)
+        if(phase_class is None):
+            return None
 
+        phase = phase_class()
+        phase.init(self._settings, **phase_config)
         return phase
