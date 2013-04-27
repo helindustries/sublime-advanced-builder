@@ -213,6 +213,7 @@ class BuildSolutionPhase(BuildPhase):
             # So the assembly is not in the list, add it.
             print "Appending assembly:", assembly
             assemblies.append(assembly)
+            assemblies.sort()
             settings_overwrite["completesharp_assemblies"] = assemblies
             self.settings.project()["settings"] = settings_overwrite
             self.settings.project_dirty()

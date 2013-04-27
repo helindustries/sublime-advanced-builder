@@ -459,6 +459,7 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
     """
 
     PHASE_SOLUTION = "solution"
+    PHASE_SOLUTION = "unity_project"
     PHASE_COPY = "copy"
     PHASE_STYLECOP = "stylecop"
     PHASE_COMMAND = "command"
