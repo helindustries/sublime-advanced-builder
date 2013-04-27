@@ -21,7 +21,21 @@
         },
         "osx": {
             "copy": {
-                "cmd": ["cp"]
+                "cmd": ["cp", "-v", "-r"],
+                "error_regex": "^cp:\\s*(?P<message>.*)$",
+                "warning_regex": "^cp:\\s*(?P<message>.*)$"
+            },
+            "mono": {
+                "env": {
+                    "MONO_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib/mono/2.0",
+                    "LD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "DYLD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "MONO_IOMAP": "case"
+                },
+                "cmd": ["/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/bin/mono"],
+                "error_regex": "^DONT_MATCH$",
+                "warning_regex": "^DONT_MATCH$",
+                "message_regex": "^\\s*(?P<message>.*)\\s*$"
             },
             "stylecop": {
                 "env": {
