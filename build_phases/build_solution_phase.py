@@ -66,8 +66,10 @@ class BuildSolutionPhase(BuildPhase):
         path = self.path_selector
         if(path is None):
             path = self._solution
+            path = os.path.dirname(self.settings.expand_placeholders(path))
+        else:
+            path = self.settings.expand_placeholders(path)
 
-        path = os.path.dirname(self.settings.expand_placeholders(path))
         if(not path.endswith("/")):
             path += "/"
 
