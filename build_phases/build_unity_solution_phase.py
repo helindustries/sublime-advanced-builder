@@ -50,7 +50,7 @@ class BuildUnitySolutionPhase(BuildSolutionPhase):
 
     def parse_project(self, project):
         # Parse the base project first
-        super(BuildUnitySolutionPhase, self).parse_project(_settings, **kwargs)
+        super(BuildUnitySolutionPhase, self).parse_project(project)
 
         # Add the Unity3D script assemblies from their final location
         project_dir = os.path.dirname(project)

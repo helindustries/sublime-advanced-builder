@@ -219,9 +219,9 @@ class BuildSolutionPhase(BuildPhase):
 
         # Check for DLL name matches in different directories, to avoid
         # CompleteSharp having more than one source.
-        for asm in assemblies:
-            if(os.path.basename(asm) == os.path.basename(assembly)):
-                return True
+        #for asm in assemblies:
+        #    if(os.path.basename(asm) == os.path.basename(assembly)):
+        #        return True
 
         return False
 
