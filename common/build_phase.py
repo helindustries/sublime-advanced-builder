@@ -44,6 +44,7 @@ class BuildPhase(object):
         self.path_selector = kwargs.get("path_selector")
         self.stop_on_error = kwargs.get("stop_on_error")
         self.configurations = kwargs.get("configurations")
+        self.tasks = kwargs.get("tasks")
         self._is_valid = True
         self._type = kwargs.get("type")
 

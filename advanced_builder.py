@@ -431,6 +431,19 @@ class OutputWindowController(ProcessListener):
         self.write(message)
         sublime.status_message(message)
 
+    def kill(self):
+        self.proc.kill()
+
+        edit = self.output_view.begin_edit()
+        self.output_view.sel().clear()
+        self.output_view.sel().add(sublime.Region(0))
+        self.output_view.end_edit(edit)
+        self.output_view.find_all_results()
+
+        message = "[%s interrupted]" % (self.task)
+        self.write(message)
+        sublime.status_message(message)
+
     def on_data(self, proc, data):
         # Return data to the main thread from the output and error threads
         sublime.set_timeout(functools.partial(self.append_data, proc, data), 0)
@@ -455,14 +468,46 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
         """
         Run the command. This is called by sublime, when a build is executed.
         """
+        kill = args.get("kill")
+        if(kill is not None) and (kill):
+            # Kill the currently running process and get out
+            if(hasattr(self, "_exec")) and (self._exec is not None):
+                print "Killing current task"
+                self.cancel_command()
+            else:
+                print "No task to kill"
+
+            return
+
+        if(hasattr(self, "_exec")) and (self._exec is not None):
+            # There is a command already running, ask if it should be stopped
+            stop = sublime.ok_cancel_dialog("There is already a command being processed, do you want to cancel it?", "Stop")
+            if(stop):
+                # Stop the old process and continue to use the new one
+                self.cancel_command()
+            else:
+                # Get out, there should only be one build running
+                return
+
+        self.run_command(**args)
+
+    def cancel_command(self):
+        self._exec.kill()
+        self._stop = True
+        if(not self._quiet):
+            self._exec.write("Killed: %s [%s]" % (self._current_phase, self._settings.active_configuration()))
+        self._cleanup_command()
+
+    def run_command(self, **args):
         # Initialize a settings wrapper (because we have so many!)
         self._settings = AdvancedBuilderSettings(self.window)
         self._settings.build_settings = args;
         self._exec = OutputWindowController()
-        self._exec.init(self, jump_to_error = self._settings.jump_to_error())
+        self._exec.init(self, self._settings.active_task(), jump_to_error = self._settings.jump_to_error())
         self._current_phase = None
         self._quiet = self._settings.quiet()
         self._exec.quiet = self._quiet
+        self._stop = False
 
         # Get the phases
         self._phases = []
@@ -474,12 +519,31 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
 
             self._phases.append(phase)
 
-        self._run_tasks()
+        # Run it this way, to not run into concurrency issues.
+        sublime.set_timeout(self._run_tasks, 200)
+
+    def _cleanup_command(self):
+        self._exec = None
+        self._settings = None
+        self._phases = None
+        self._current_phase = None
 
     def _run_tasks(self):
         """
         Run all tasks sequentially.
         """
+        if(self._stop):
+            # Now it gets funky: If a process was killed, the new one
+            # will spawn a new _run_tasks method. That would mean we
+            # have two. But because this method does not hold a context
+            # by itself, we don't care, which of the two is stopped, it
+            # will be the first one to come in here. Care must be taken
+            # however on when to clean up the _exec context, which needs
+            # to happen when _stop is set to True, so as to not screw up
+            # the context of the new process.
+            self._stop = False
+            return
+
         if(self._exec.is_running()):
             # Still waiting for the process to finish, wait another 0.1s
             sublime.set_timeout(self._run_tasks, 100)
@@ -488,6 +552,7 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
         if(len(self._phases) < 1):
             # We are done
             self._exec.done()
+            self._cleanup_command()
             return;
 
         if(self._exec.has_errors) and (self._current_phase is not None) and (self._current_phase.stop_on_error):
@@ -495,6 +560,7 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
             if(not self._quiet):
                 self._exec.write("%s [%s] has errors, stopping" % (self._current_phase, self._settings.active_configuration()))
             self._exec.done()
+            self._cleanup_command()
             return
 
         # The last phase finished successfully, start a new one.
@@ -502,6 +568,7 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
         while(not started):
             if(len(self._phases) < 1):
                 self._exec.done()
+                self._cleanup_command()
                 return;
 
             self._current_phase = self._phases[0]
