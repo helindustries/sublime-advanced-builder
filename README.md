@@ -95,14 +95,19 @@ though.
 Too many.
 
 This plugin currently does not work in Sublime Text 3. I may add support later, but at the moment, I am just stuck
-on some issues.
+on some issues. I already looked into it, but hit a brick wall because of a lockup when sending lots of data to the
+output view. I may provide a compatible version in the future, but no promises.
+
+Comments in the project settings will result in an exception from the JSON parser, integrated into python. It is used
+when updating the DLL references for CompleteSharp. There is currently no flag to disable it, sorry.
+
+The included StyleCop runner will always use all default rules. Even though specifying a valid settings file is
+required for the phase and the StyleCop executable, it does not currently use it for the source code analysis.
 
 Builds depending on ${project_path} may fail, because the plugin is not able to resolve
 the location of your project file correctly. This happens, when the file is more than 4 steps away from any
 configured folder. It may also take a long time for the plugin to resolve that path, if there are a lot of
 folders configured.
-
-The build-solution phase will spam your project file with all the DLLs, it can find.
 
 People, working with JSON may be annoyed by the new build-system and build-phase snippets, just remove them from the
 package directory, should that be the case.
