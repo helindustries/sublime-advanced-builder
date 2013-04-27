@@ -186,12 +186,6 @@ class BuildSolutionPhase(BuildPhase):
 
             self.add_assembly(ref_path)
 
-        unity_dll_path = os.path.join(project_dir, "Library", "ScriptAssemblies")
-        for dll in ["Assembly-CSharp-Editor.dll", "Assembly-CSharp.dll"]:
-            opath = os.path.join(unity_dll_path, dll)
-            if(os.path.isfile(opath)):
-                self.add_assembly(opath)
-
     def add_assembly(self, assembly):
         # Make sure, the absolute path to the assembly is used.
         assembly = os.path.abspath(assembly)
