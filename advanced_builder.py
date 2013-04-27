@@ -268,9 +268,11 @@ class OutputWindowController(ProcessListener):
         self.append_data(self.proc, message + "\n")
 
     def _build_message(self, proc, importance, **kwargs):
+        message = ""
         # Add the importance to the arguments
-        kwargs["importance"] = importance
-        message = "[%(importance)s]"
+        if(importance is not None):
+            kwargs["importance"] = importance
+            message = "[%(importance)s]"
 
         path = kwargs.get("file")
         if(path is not None):
