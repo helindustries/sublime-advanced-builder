@@ -209,13 +209,26 @@ class BuildSolutionPhase(BuildPhase):
         if(assemblies is None):
             assemblies = []
 
-        if(assembly not in assemblies):
+        if(not self._assembly_already_referenced(assemblies, assembly)):
             # So the assembly is not in the list, add it.
             print "Appending assembly:", assembly
             assemblies.append(assembly)
             settings_overwrite["completesharp_assemblies"] = assemblies
             self.settings.project()["settings"] = settings_overwrite
             self.settings.project_dirty()
+
+    def _assembly_already_referenced(self, assemblies, assembly):
+        if(assembly in assemblies):
+            # Check for exact matches real quick.
+            return True
+
+        # Check for DLL name matches in different directories, to avoid
+        # CompleteSharp having more than one source.
+        for asm in assemblies:
+            if(os.path.basename(asm) == os.path.basename(assembly)):
+                return True
+
+        return False
 
     def element_path(self, node):
         return node.childNodes[0].nodeValue.replace("\\", os.path.sep)
