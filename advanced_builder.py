@@ -38,12 +38,8 @@ import time
 import sublime
 import sublime_plugin
 
-from common.build_phase import BuildPhase
-from common.settings import AdvancedBuilderSettings
-from build_phases.build_solution_phase import BuildSolutionPhase
-from build_phases.copy_files_phase import CopyFilesPhase
-from build_phases.stylecop_phase import StyleCopPhase
-from build_phases.run_command_phase import RunCommandPhase
+from common import AdvancedBuilderSettings
+from build_phases import BuildSolutionPhase, BuildUnitySolutionPhase, CopyFilesPhase, StyleCopPhase, RunCommandPhase
 
 def value_or_default(dictionary, key, expect_type, default):
     value = dictionary.get(key)

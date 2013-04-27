@@ -25,7 +25,7 @@
 """
 A build phase to run arbitrary commands
 """
-from common.build_phase import BuildPhase
+from common import BuildPhase
 
 class RunCommandPhase(BuildPhase):
     """

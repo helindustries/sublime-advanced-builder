@@ -30,7 +30,7 @@ import re
 import os
 import os.path
 from xml.dom.minidom import parse
-from common.build_phase import BuildPhase
+from common import BuildPhase
 
 class StyleCopPhase(BuildPhase):
     """

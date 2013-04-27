@@ -27,7 +27,7 @@ The .net solution build phase
 """
 import re
 import os.path
-from common.build_phase import BuildPhase
+from common import BuildPhase
 from xml.dom.minidom import parse
 
 PROJECT_RE = re.compile("^Project\(\"\{.*\}\"\) = \"(?P<project_name>.*)\", \"(?P<project_path>.*)\", \"\{.*\}\".*$")

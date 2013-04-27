@@ -26,7 +26,7 @@
 The copy files build phase.
 """
 import os.path
-from common.build_phase import BuildPhase
+from common import BuildPhase
 
 class CopyFilesPhase(BuildPhase):
     """
