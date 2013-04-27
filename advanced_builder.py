@@ -513,8 +513,8 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
         self._phases = []
         for phase_config in self._settings.build_phases():
             phase = self._get_phase_object(phase_config)
-            if(not phase.is_valid()):
-                self._exec.write("Invalid config for phase: [%s], aborting" % (str(phase)))
+            if(phase is None) or (not phase.is_valid()):
+                self._exec.write("Invalid config for phase: %s ([%s]), aborting" % (phase_config.get("name"), str(phase)))
                 return
 
             self._phases.append(phase)
