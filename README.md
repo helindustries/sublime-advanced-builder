@@ -14,9 +14,8 @@ This Sublime Text 2 package adds advanced building capabilities (advanced as in 
 * 5 preconfigured types of phases
   - 'command' to run a command
   - 'copy' to copy files around
-  - 'solution' to perform a build using a .sln file (because I have to work with this sh**). This wil
-    also add any references and output DLLs from the solution to the "completesharp_assemblies" setting
-    of your project (or rather it works for me)
+  - 'solution' to perform a build using a .sln file. This will also add any references and output DLLs from
+    the solution to the "completesharp_assemblies" setting of your project (or rather it works for me)
   - 'unity' to build Unity3D solutions. This is the same as a regular solution, but with fixes for assembly references
   - 'stylecop' to check code against StyleCop rules (StyleCop.exe included, linked against Mono)
 
