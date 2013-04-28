@@ -158,7 +158,8 @@ class StyleCopPhase(BuildPhase):
         path = self.settings.expand_placeholders(self._path)
         path = os.path.join(path, "Violations.stylecop")
         has_violations = self.print_violations(path, window_controller)
-        os.remove(path);
+        if(os.path.isfile(path)):
+            os.remove(path);
         return has_violations;
 
     def print_violations(self, path, window_controller):
