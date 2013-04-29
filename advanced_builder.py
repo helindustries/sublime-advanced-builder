@@ -432,7 +432,8 @@ class OutputWindowController(ProcessListener):
         sublime.status_message(message)
 
     def kill(self):
-        self.proc.kill()
+        if(self.proc is not None):
+            self.proc.kill()
 
         edit = self.output_view.begin_edit()
         self.output_view.sel().clear()
