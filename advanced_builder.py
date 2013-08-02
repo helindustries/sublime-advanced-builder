@@ -453,6 +453,7 @@ class OutputWindowController(ProcessListener):
                     else:
                         line = self._build_message(proc, "WARNING", **warning_data)
 
+                    self.write_to_view(edit, line + "\n", selection_was_at_end)
                     continue
 
             if(proc.message_regex is not None):
