@@ -28,7 +28,17 @@ phase, but since Unity3D moves the build results from Temp/bin/ to the Library f
 the project parser needs some additions to find those.
 """
 import os.path
+import sublime
 from . import BuildSolutionPhase
+
+if int(sublime.version()) < 3000:
+    from common import BuildPhase
+    def printcons(*msg):
+        print " ".join(str(x) for x in msg)
+else:
+    from ..common import BuildPhase
+    def printcons(*msg):
+        print(" ".join(str(x) for x in msg))
 
 unity_dll_locations = [
     ["Library", "ScriptAssemblies", "Assembly-CSharp.dll"],

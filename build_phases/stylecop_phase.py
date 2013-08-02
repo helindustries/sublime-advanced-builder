@@ -30,7 +30,16 @@ import re
 import os
 import os.path
 from xml.dom.minidom import parse
-from common import BuildPhase
+import sublime
+
+if int(sublime.version()) < 3000:
+    from common import BuildPhase
+    def printcons(*msg):
+        print " ".join(str(x) for x in msg)
+else:
+    from ..common import BuildPhase
+    def printcons(*msg):
+        print(" ".join(str(x) for x in msg))
 
 class StyleCopPhase(BuildPhase):
     """
@@ -164,7 +173,7 @@ class StyleCopPhase(BuildPhase):
 
     def print_violations(self, path, window_controller):
         """
-        Print violations from a StyleCop results file
+        print violations from a StyleCop results file
         """
         # StyleCop doesn't end its data with a newline!
         # Because the error expressions need to match
@@ -200,7 +209,7 @@ class StyleCopPhase(BuildPhase):
                 check_id = violation.getAttribute("CheckId")
                 message = violation.getAttribute("message")
 
-                # Print the warning
+                # printcons(the warning)
                 message = "%s(%s,0) warning:%s %s" % (file_name, line, check_id, message)
                 window_controller.process_print(message)
                 count += 1

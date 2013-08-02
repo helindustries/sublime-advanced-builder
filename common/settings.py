@@ -33,6 +33,13 @@ import os.path
 import sublime
 import time
 
+if int(sublime.version()) < 3000:
+    def printcons(*msg):
+        print " ".join(str(x) for x in msg)
+else:
+    def printcons(*msg):
+        print(" ".join(str(x) for x in msg))
+
 class SettingsWriter(object):
 
     def __init__(self, window, path, data):
@@ -45,30 +52,32 @@ class SettingsWriter(object):
         self._done = False
 
     def save(self):
-        # XXX: This is a very, very dirty hack because the API of
-        #      sublime is very, very limited in this scope.
-        for view in self._window.views():
-            if(view.file_name() == self._path):
-                self._project_file_open = True
-                break
+        if int(sublime.version()) < 3000:
+            # XXX: This is a very, very dirty hack because the API of
+            #      sublime is very, very limited in this scope.
+            for view in self._window.views():
+                if(view.file_name() == self._path):
+                    self._project_file_open = True
+                    break
 
-        # Open the settings file and start waiting
-        self._last_view = self._window.active_view().file_name()
-        self._view = self._window.open_file(self._path)
-        print "Saving:", self._path
-        self._do_save()
-
+            # Open the settings file and start waiting
+            self._last_view = self._window.active_view().file_name()
+            self._view = self._window.open_file(self._path)
+            printcons("Saving:", self._path)
+            self._do_save()
+        else:
+            self._window.set_project_data(self._data)
 
     def _do_save(self):
         if(self._view.is_loading()):
-            print "View still not open, waiting"
+            printcons("View still not open, waiting")
             sublime.set_timeout(self._do_save, 100)
             return
 
-        print "View opened, making changes"
+        printcons("View opened, making changes")
         if(self._window.active_view().file_name() != self._path):
             # The last view has changed, update it.
-            print "The view changed, updating"
+            printcons("The view changed, updating")
             self._last_view = self._window.active_view().file_name()
 
         # The view has finished loading, present it again and start editing
@@ -101,7 +110,7 @@ class AdvancedBuilderSettings(object):
 
     PROJECT_PATH_RECURSION_DEPTH = 2
 
-    def __init__(self, window):
+    def __init__(self, window, build_settings):
         """
         Initialize the builder settings.
         """
@@ -111,7 +120,7 @@ class AdvancedBuilderSettings(object):
         # Load the relevant settings
         self.package_settings = sublime.load_settings(AdvancedBuilderSettings.SETTINGS_FILE)
         self.project_settings = window.active_view().settings()
-        self.build_settings = {}
+        self.build_settings = build_settings
         self._project = None
         self._active_file = window.active_view().file_name()
         self._init_commands()
@@ -256,13 +265,17 @@ class AdvancedBuilderSettings(object):
         """
         Get the project settings.
         """
-        if(self._project is None):
-            if(self._project_file is None):
-                return None
+        if int(sublime.version()) < 3000:
+            if(self._project is None):
+                if(self._project_file is None):
+                    return None
 
-            with open(self._project_file) as fd:
-                self._project = json.load(fd)
-                self._project_dirty = False
+                with open(self._project_file) as fd:
+                    self._project = json.load(fd)
+                    self._project_dirty = False
+        else:
+            self._project = self._window.project_data()
+            self._project_dirty = False;
 
         return self._project
 
@@ -280,12 +293,22 @@ class AdvancedBuilderSettings(object):
         saver.save()
 
     def _init_paths(self):
-        self._project_path = None
         self._project_file = None
+        self._scanned_folders = []
+        self._project_path = self.build_settings.get("project_path")
+        if int(sublime.version()) > 3000:
+            if self._project_path is None:
+                self._project_path = self.build_settings.get("working_dir")
+
+            self._project_file = os.path.join(self._project_path, self._window.project_file_name())
+            if not os.path.isfile(self._project_file):
+                self._project_file = None
+        else:
+            self._find_project(self.build_settings.get("working_dir"))
+
         self._current_folder = None
         self._scanned_folders = []
         self._package_path = os.path.join(sublime.packages_path(), "Advanced Build System")
-        #self._package_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
         for folder in self._window.folders():
             if(self._project_file is None):
@@ -296,10 +319,12 @@ class AdvancedBuilderSettings(object):
 
         if(self._project_file is None):
             self._project_path = "."
+            printcons("Warning: Project path not found!")
         else:
             self._project_path = os.path.dirname(self._project_file)
 
         if(self._current_folder is None):
+            printcons("Warning: Current folder not found!")
             self._current_folder = "."
 
         del(self._scanned_folders)

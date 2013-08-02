@@ -27,7 +27,16 @@ The .net solution build phase
 """
 import re
 import os.path
-from common import BuildPhase
+import sublime
+if int(sublime.version()) < 3000:
+    from common import BuildPhase
+    def printcons(*msg):
+        print " ".join(str(x) for x in msg)
+else:
+    from ..common import BuildPhase
+    def printcons(*msg):
+        print(" ".join(str(x) for x in msg))
+
 from xml.dom.minidom import parse
 
 PROJECT_RE = re.compile("^Project\(\"\{.*\}\"\) = \"(?P<project_name>.*)\", \"(?P<project_path>.*)\", \"\{.*\}\".*$")
@@ -106,40 +115,45 @@ class BuildSolutionPhase(BuildPhase):
         Called, when the task is completed.
         """
         if(self._add_assemblies):
-            print "Adding assemblies"
+            printcons("Adding assemblies")
             path = self.settings.expand_placeholders(self._solution)
             self.parse_solution(path)
             self.settings.save_project()
         else:
-            print "Not adding assemblies, it is disabled"
+            printcons("Not adding assemblies, it is disabled")
 
         return False
 
     def parse_solution(self, path):
         if(not self.settings.quiet()):
             pass
-        print "Parsing solution:", path
+        printcons("Parsing solution:", path)
 
         # Find all referenced projects
         solution_dir = os.path.dirname(path)
 
-        with open(path) as fd:
-            for line in fd.readlines():
-                match = PROJECT_RE.match(line)
-                if(match is None):
-                    continue
+        if int(sublime.version()) < 3000:
+            fd = open(path)
+        else:
+            fd = open(path, encoding="utf-8")
 
-                # Found a project entry, extract the path
-                project_path = match.group("project_path")
-                project_path = project_path.replace("\\", os.path.sep)
+        for line in fd:
+            match = PROJECT_RE.match(line)
+            if(match is None):
+                continue
 
-                # Make the path be relative to the solution directory and parse it
-                project_path = os.path.join(solution_dir, project_path)
-                if(not self.settings.quiet()):
-                    pass
-                print "Found Project:", project_path
-                self.parse_project(project_path)
+            # Found a project entry, extract the path
+            project_path = match.group("project_path")
+            project_path = project_path.replace("\\", os.path.sep)
 
+            # Make the path be relative to the solution directory and parse it
+            project_path = os.path.join(solution_dir, project_path)
+            if(not self.settings.quiet()):
+                pass
+            printcons("Found Project:", project_path)
+            self.parse_project(project_path)
+
+        fd.close()
         return False
 
     def parse_project(self, project):
@@ -165,7 +179,7 @@ class BuildSolutionPhase(BuildPhase):
                 assembly_path = os.path.join(opath, target)
                 if not self.settings.quiet():
                     pass
-                print "Found output assembly:", assembly_path
+                printcons("Found output assembly:", assembly_path)
 
                 self.add_assembly(assembly_path)
 
@@ -182,7 +196,7 @@ class BuildSolutionPhase(BuildPhase):
             ref_path = os.path.join(project_dir, ref_path)
             if not self.settings.quiet():
                 pass
-            print "Found referenced assembly:", ref_path
+            printcons("Found referenced assembly:", ref_path)
 
             self.add_assembly(ref_path)
 
@@ -192,7 +206,7 @@ class BuildSolutionPhase(BuildPhase):
 
         # Make sure only to add assemblies, that actually exist.
         if not os.path.exists(assembly):
-            print "Assembly not found:", assembly
+            printcons("Assembly not found:", assembly)
             return;
 
         settings_overwrite = self.settings.project().get("settings")
@@ -205,7 +219,7 @@ class BuildSolutionPhase(BuildPhase):
 
         if(not self._assembly_already_referenced(assemblies, assembly)):
             # So the assembly is not in the list, add it.
-            print "Appending assembly:", assembly
+            printcons("Appending assembly:", assembly)
             assemblies.append(assembly)
             assemblies.sort()
             settings_overwrite["completesharp_assemblies"] = assemblies

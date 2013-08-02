@@ -27,7 +27,16 @@ The copy files build phase.
 """
 import os.path
 import glob
-from common import BuildPhase
+import sublime
+
+if int(sublime.version()) < 3000:
+    from common import BuildPhase
+    def printcons(*msg):
+        print " ".join(str(x) for x in msg)
+else:
+    from ..common import BuildPhase
+    def printcons(*msg):
+        print(" ".join(str(x) for x in msg))
 
 class CopyFilesPhase(BuildPhase):
     """

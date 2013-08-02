@@ -31,15 +31,23 @@ import sys
 import re
 import os
 import os.path
-import thread
+import threading
 import subprocess
 import functools
 import time
 import sublime
 import sublime_plugin
 
-from common import AdvancedBuilderSettings
-from build_phases import BuildSolutionPhase, BuildUnitySolutionPhase, CopyFilesPhase, StyleCopPhase, RunCommandPhase
+if int(sublime.version()) < 3000:
+    from common import AdvancedBuilderSettings
+    from build_phases import BuildSolutionPhase, BuildUnitySolutionPhase, CopyFilesPhase, StyleCopPhase, RunCommandPhase
+    def printcons(*msg):
+        print " ".join(str(x) for x in msg)
+else:
+    from .common import AdvancedBuilderSettings
+    from .build_phases import BuildSolutionPhase, BuildUnitySolutionPhase, CopyFilesPhase, StyleCopPhase, RunCommandPhase
+    def printcons(*msg):
+        print(" ".join(str(x) for x in msg))
 
 supported_build_phases = {
     "solution": BuildSolutionPhase,
@@ -51,7 +59,7 @@ supported_build_phases = {
 
 def value_or_default(dictionary, key, expect_type, default):
     value = dictionary.get(key)
-    if(value is None) or (not isinstance(value, expect_type)):
+    if(value is None) or ((expect_type is not None) and (not isinstance(value, expect_type))):
         value = default
     return value
 
@@ -65,22 +73,37 @@ class ProcessListener(object):
 # Encapsulates subprocess.Popen, forwarding stdout to a supplied
 # ProcessListener (on a separate thread)
 class AsyncBuildProcess(object):
-    def __init__(self, arg_list, env, listener,
+    def __init__(self, cmd, shell_cmd, env, listener,
             # "path" is an option in build systems
             path="",
             # "shell" is an options in build systems
             shell=False,
             **kwargs):
 
+        if not shell_cmd and not cmd:
+            raise ValueError("shell_cmd or cmd is required")
+
+        if shell_cmd and not isinstance(shell_cmd, str):
+            raise ValueError("shell_cmd must be a string")
+
         # The process-specific output configuration
-        self.skip_lines = value_or_default(kwargs, "skip_lines", long, 0)
-        self.working_dir = value_or_default(kwargs, "working_dir", unicode, "")
-        self.error_regex = value_or_default(kwargs, "error_regex", unicode, None)
-        self.warning_regex = value_or_default(kwargs, "warning_regex", unicode, None)
-        self.message_regex = value_or_default(kwargs, "message_regex", unicode, None)
-        self.line_regex = value_or_default(kwargs, "line_regex", unicode, None)
+        self.skip_lines = value_or_default(kwargs, "skip_lines", int, 0)
+        self.working_dir = value_or_default(kwargs, "working_dir", None, "")
+        self.error_regex = value_or_default(kwargs, "error_regex", None, None)
+        self.warning_regex = value_or_default(kwargs, "warning_regex", None, None)
+        self.message_regex = value_or_default(kwargs, "message_regex", None, None)
+        self.line_regex = value_or_default(kwargs, "line_regex", None, None)
         self.warnings_as_errors = value_or_default(kwargs, "warnings_as_errors", bool, False)
         self.completion_callback = kwargs.get("completion_callback")
+
+        if self.error_regex is not None:
+            self.error_re = re.compile(self.error_regex, re.UNICODE)
+        if self.warning_regex is not None:
+            self.warning_re = re.compile(self.warning_regex, re.UNICODE)
+        if self.message_regex is not None:
+            self.message_re = re.compile(self.message_regex, re.UNICODE)
+        if self.line_regex is not None:
+            self.line_re = re.compile(self.line_regex, re.UNICODE)
 
         # The output buffer, because the regex matching will require full lines
         self.buffer = ""
@@ -105,26 +128,49 @@ class AsyncBuildProcess(object):
 
         proc_env = os.environ.copy()
         proc_env.update(env)
-        for k, v in proc_env.iteritems():
-            proc_env[k] = os.path.expandvars(v).encode(sys.getfilesystemencoding())
+        for k in proc_env:
+            printcons("expanding ", k)
+            proc_env[k] = os.path.expandvars(proc_env[k]).encode(sys.getfilesystemencoding())
 
-        # Start a process and return immediately
-        self.proc = subprocess.Popen(arg_list, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, startupinfo=startupinfo, env=proc_env, shell=shell)
+        if shell_cmd and sys.platform == "win32":
+            # Use shell=True on Windows, so shell_cmd is passed through with the correct escaping
+            self.proc = subprocess.Popen(shell_cmd, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, startupinfo=startupinfo, env=proc_env, shell=True)
+        elif shell_cmd and sys.platform == "darwin":
+            # Use a login shell on OSX, otherwise the users expected env vars won't be setup
+            self.proc = subprocess.Popen(["/bin/bash", "-l", "-c", shell_cmd], stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, startupinfo=startupinfo, env=proc_env, shell=False)
+        elif shell_cmd and sys.platform == "linux":
+            # Explicitly use /bin/bash on Linux, to keep Linux and OSX as
+            # similar as possible. A login shell is explicitly not used for
+            # linux, as it's not required
+            self.proc = subprocess.Popen(["/bin/bash", "-c", shell_cmd], stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, startupinfo=startupinfo, env=proc_env, shell=False)
+        else:
+            # Old style build system, just do what it asks
+            self.proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE, startupinfo=startupinfo, env=proc_env, shell=shell)
 
         if path:
             os.environ["PATH"] = old_path
 
         if self.proc.stdout:
-            thread.start_new_thread(self.read_stdout, ())
+            threading.Thread(target=self.read_stdout).start()
 
         if self.proc.stderr:
-            thread.start_new_thread(self.read_stderr, ())
+            threading.Thread(target=self.read_stderr).start()
 
     def kill(self):
         if not self.killed:
             self.killed = True
-            self.proc.terminate()
+            if sys.platform == "win32":
+                # terminate would not kill process opened by the shell cmd.exe, it will only kill
+                # cmd.exe leaving the child running
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                subprocess.Popen("taskkill /PID " + str(self.proc.pid), startupinfo=startupinfo)
+            else:
+                self.proc.terminate()
             self.listener = None
 
     def wait(self):
@@ -141,7 +187,7 @@ class AsyncBuildProcess(object):
         while True:
             data = os.read(self.proc.stdout.fileno(), 2**15)
 
-            if data != "":
+            if len(data) > 0:
                 if self.listener:
                     self.listener.on_data(self, data)
             else:
@@ -154,7 +200,7 @@ class AsyncBuildProcess(object):
         while True:
             data = os.read(self.proc.stderr.fileno(), 2**15)
 
-            if data != "":
+            if len(data) > 0:
                 if self.listener:
                     self.listener.on_data(self, data)
             else:
@@ -162,13 +208,16 @@ class AsyncBuildProcess(object):
                 break
 
 class OutputWindowController(ProcessListener):
-    def init(self, command, task, encoding = "utf-8", quiet = False, jump_to_error = True):
+    def init(self, command, task, encoding = "utf-8", quiet = False, jump_to_error = True, syntax = "Packages/Advanced Build System/AdvancedBuilderConsole.tmLanguage"):
         self.window = command.window
         self.task = task
 
         if not hasattr(self, 'output_view'):
             # Try not to call get_output_panel until the regexes are assigned
-            self.output_view = self.window.get_output_panel("advanced_builder")
+            if int(sublime.version()) < 3000:
+                self.output_view = self.window.get_output_panel("advanced_builder")
+            else:
+                self.output_view = self.window.create_output_panel("advanced_builder")
 
         self.working_dir = os.path.dirname(self.window.active_view().file_name())
         for folder in self.window.folders():
@@ -180,13 +229,19 @@ class OutputWindowController(ProcessListener):
         self.output_view.settings().set("result_line_regex", "^.*\((\d+), (\d+)\).*$")
         self.output_view.settings().set("result_base_dir", self.working_dir)
 
-        # Call get_output_panel a second time after assigning the above
-        # settings, so that it'll be picked up as a result buffer
-        self.window.get_output_panel("advanced_builder")
+        if int(sublime.version()) < 3000:
+            # Call get_output_panel() a second time after assigning the above
+            # settings, so that it'll be picked up as a result buffer
+            self.window.get_output_panel("advanced_builder")
+        else:
+            self.output_view.settings().set("line_numbers", False)
+            self.output_view.settings().set("gutter", False)
+            self.output_view.settings().set("scroll_past_end", False)
+            self.output_view.assign_syntax(syntax)
 
-        show_panel_on_build = sublime.load_settings("Preferences.sublime-settings").get("show_panel_on_build", True)
-        if show_panel_on_build:
-            self.window.run_command("show_panel", {"panel": "output.advanced_builder"})
+            # Call create_output_panel() a second time after assigning the above
+            # settings, so that it'll be picked up as a result buffer
+            self.window.create_output_panel("advanced_builder")
 
         self.encoding = encoding
         self.quiet = quiet
@@ -196,11 +251,15 @@ class OutputWindowController(ProcessListener):
         self.has_errors = False
         self._running = False
 
-    def run(self, cmd = [], working_dir = "", env = {}, kill = False, **kwargs):
+        show_panel_on_build = sublime.load_settings("Preferences.sublime-settings").get("show_panel_on_build", True)
+        if show_panel_on_build:
+            self.window.run_command("show_panel", {"panel": "output.advanced_builder"})
+
+    def run(self, cmd = None, shell_cmd = None, working_dir = "", env = {}, kill = False, **kwargs):
         self.has_errors = False
 
         # Mangle some parameters for the AsyncBuildProcess
-        if(not kwargs.has_key("error_regex")) and (kwargs.has_key("file_regex")):
+        if("error_regex" not in kwargs) and ("file_regex" in kwargs):
             # Support sublime-specific error finding
             kwargs["error_regex"] = kwargs["file_regex"]
             del(kwargs["file_regex"])
@@ -218,7 +277,11 @@ class OutputWindowController(ProcessListener):
             working_dir = os.path.dirname(self.window.active_view().file_name())
 
         if not self.quiet:
-            print "Running " + " ".join(cmd)
+            if cmd is not None:
+                printcons("Running " + " ".join(cmd))
+            elif shell_cmd is not None:
+                printcons("Running " + shell_cmd)
+
             sublime.status_message("Building")
 
         merged_env = env.copy()
@@ -238,10 +301,10 @@ class OutputWindowController(ProcessListener):
 
         try:
             # Forward kwargs to AsyncBuildProcess
-            self.proc = AsyncBuildProcess(cmd, merged_env, self, working_dir = working_dir, **kwargs)
+            self.proc = AsyncBuildProcess(cmd, shell_cmd, merged_env, self, working_dir = working_dir, **kwargs)
             self._running = True
-        except err_type as e:
-            self.append_data(None, str(e) + "\n")
+        except(err_type) as exc:
+            self.append_data(None, str(exc) + "\n")
             self.append_data(None, "[cmd:  " + str(cmd) + "]\n")
             self.append_data(None, "[dir:  " + str(os.getcwdu()) + "]\n")
             if "PATH" in merged_env:
@@ -261,12 +324,12 @@ class OutputWindowController(ProcessListener):
         return self._running
 
     def write(self, message):
-        self.append_data(None, str(message) + "\n")
+        self.append_data(None, (message + "\n").encode(self.encoding))
 
     def process_print(self, message):
         if(not self.quiet):
-            print message
-        self.append_data(self.proc, message + "\n")
+            printcons(message)
+        self.append_data(self.proc, (message + "\n").encode(self.encoding))
 
     def _build_message(self, proc, importance, **kwargs):
         message = ""
@@ -298,6 +361,27 @@ class OutputWindowController(ProcessListener):
         message = message.strip()
         return message % kwargs
 
+    def write_to_view(self, edit, message, focus, **args):
+        #printcons(message)
+        if int(sublime.version()) < 3000:
+            self.output_view.insert(edit, self.output_view.size(), unicode(message))
+        else:
+            self.output_view.run_command('append', {'characters': message, 'force': True, 'scroll_to_end': focus})
+
+    def begin_edit(self):
+        if int(sublime.version()) < 3000:
+            self.output_view.set_read_only(False)
+            return self.output_view.begin_edit()
+        else:
+            return None
+
+    def end_edit(self, edit, selection_was_at_end):
+        if int(sublime.version()) < 3000:
+            if selection_was_at_end:
+                self.output_view.show(self.output_view.size())
+            self.output_view.end_edit(edit)
+            self.output_view.set_read_only(True)
+
     def append_data(self, proc, data):
         if(proc is not None) and (proc != self.proc):
             # This is not our current process, don't do anything.
@@ -315,8 +399,8 @@ class OutputWindowController(ProcessListener):
         selection_was_at_end = (len(self.output_view.sel()) == 1
             and self.output_view.sel()[0]
                 == sublime.Region(self.output_view.size()))
-        self.output_view.set_read_only(False)
-        edit = self.output_view.begin_edit()
+
+        edit = self.begin_edit();
 
         # Prepare the data
         if(proc is not None):
@@ -325,7 +409,7 @@ class OutputWindowController(ProcessListener):
 
         str_lines = str_data.split("\n")
         if(len(str_lines) > 0):
-            if(str_lines[-1] != ""):
+            if(proc is not None and str_lines[-1] != ""):
                 # Got a line, that was not terminated, put it in the buffer and remove it.
                 proc.buffer = str_lines[-1]
 
@@ -334,7 +418,7 @@ class OutputWindowController(ProcessListener):
         # walk through the lines
         for line in str_lines:
             if(proc is None):
-                self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
+                self.write_to_view(edit, line + "\n", selection_was_at_end)
                 continue
 
             # process the process-specific stuff O.o
@@ -345,22 +429,22 @@ class OutputWindowController(ProcessListener):
 
             if(proc.error_regex is not None):
                 # got an error regex, match it
-                err_match = re.match(str(proc.error_regex), line, re.UNICODE)
+                err_match = proc.error_re.match(line)
 
                 if(err_match is not None):
-                    print "Error in: %s" % line.strip()
+                    printcons("Error in: %s" % line.strip())
                     error_data = err_match.groupdict()
                     self.has_errors = True
                     line = self._build_message(proc, "ERROR", **error_data)
-                    self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
+                    self.write_to_view(edit, line + "\n", selection_was_at_end)
                     continue
 
             if(proc.warning_regex is not None):
                 # got a warning regex
-                warn_match = re.match(str(proc.warning_regex), line, re.UNICODE)
+                warn_match = proc.warning_re.match(line)
 
                 if(warn_match is not None):
-                    print "Warning in: %s" % line.strip()
+                    printcons("Warning in: %s" % line.strip())
                     warning_data = warn_match.groupdict()
 
                     if(proc.warnings_as_errors):
@@ -369,25 +453,21 @@ class OutputWindowController(ProcessListener):
                     else:
                         line = self._build_message(proc, "WARNING", **warning_data)
 
-                    self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
                     continue
 
             if(proc.message_regex is not None):
                 # got an error regex, match it
-                msg_match = re.match(str(proc.message_regex), line, re.UNICODE)
+                msg_match = proc.message_re.match(line)
 
                 if(msg_match is not None):
                     line = self._build_message(proc, None, **msg_match.groupdict())
-                    self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
+                    self.write_to_view(edit, line + "\n", selection_was_at_end)
                     continue
 
             if(not self.quiet):
-                self.output_view.insert(edit, self.output_view.size(), unicode(line + "\n"))
+                self.write_to_view(edit, line + "\n", selection_was_at_end)
 
-        if selection_was_at_end:
-            self.output_view.show(self.output_view.size())
-        self.output_view.end_edit(edit)
-        self.output_view.set_read_only(True)
+        self.end_edit(edit, selection_was_at_end)
 
     def get_relative_path(self, working_dir, path):
         common_prefix = os.path.commonprefix([working_dir, path])
@@ -401,19 +481,20 @@ class OutputWindowController(ProcessListener):
             self.has_errors = True
 
         if(proc.completion_callback is not None):
-            print "Running completion callback"
+            printcons("Running completion callback")
             if(proc.completion_callback(self)):
                 self.has_errors = True
 
         self._running = False
 
     def done(self):
-        # Set the selection to the start, so that next_result will work as expected
-        edit = self.output_view.begin_edit()
-        self.output_view.sel().clear()
-        self.output_view.sel().add(sublime.Region(0))
-        self.output_view.end_edit(edit)
+        if int(sublime.version()) < 3000:
+            edit = self.output_view.begin_edit()
+            self.output_view.sel().clear()
+            self.output_view.sel().add(sublime.Region(0))
+            self.output_view.end_edit(edit)
 
+        # Set the selection to the start, so that next_result will work as expected
         if(self.jump_to_error):
             self.window.run_command("next_result", None)
 
@@ -432,13 +513,16 @@ class OutputWindowController(ProcessListener):
         sublime.status_message(message)
 
     def kill(self):
-        if(self.proc is not None):
+        if self.proc is not None:
             self.proc.kill()
+            self.proc = None
 
-        edit = self.output_view.begin_edit()
-        self.output_view.sel().clear()
-        self.output_view.sel().add(sublime.Region(0))
-        self.output_view.end_edit(edit)
+        if int(sublime.version()) < 3000:
+            edit = self.output_view.begin_edit()
+            self.output_view.sel().clear()
+            self.output_view.sel().add(sublime.Region(0))
+            self.output_view.end_edit(edit)
+
         self.output_view.find_all_results()
 
         message = "[%s interrupted]" % (self.task)
@@ -474,10 +558,10 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
         if(kill is not None) and (kill):
             # Kill the currently running process and get out
             if(hasattr(self, "_exec")) and (self._exec is not None):
-                print "Killing current task"
+                printcons("Killing current task")
                 self.cancel_command()
             else:
-                print "No task to kill"
+                printcons("No task to kill")
 
             return
 
@@ -502,8 +586,7 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
 
     def run_command(self, **args):
         # Initialize a settings wrapper (because we have so many!)
-        self._settings = AdvancedBuilderSettings(self.window)
-        self._settings.build_settings = args;
+        self._settings = AdvancedBuilderSettings(self.window, args)
         self._exec = OutputWindowController()
         self._exec.init(self, self._settings.active_task(), jump_to_error = self._settings.jump_to_error())
         self._current_phase = None
@@ -515,6 +598,7 @@ class AdvancedBuilderCommand(sublime_plugin.WindowCommand):
         self._phases = []
         for phase_config in self._settings.build_phases():
             phase = self._get_phase_object(phase_config)
+            printcons("Evaluating phase ", phase)
             if(phase is None) or (not phase.is_valid()):
                 self._exec.write("Invalid config for phase: %s ([%s]), aborting" % (phase_config.get("name"), str(phase)))
                 return

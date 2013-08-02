@@ -1,0 +1,125 @@
+{
+    // Default values
+    "defaults": {
+        "working_dir": "${folder}",
+        "configuration": "Debug",
+        "file_regex": "^([\\/\\d\\w:\\\\\\.-]*)\\((\\d+),(\\d+)\\)\\s*(.*)$"
+    },
+
+    // Command predefinition as I need them.
+    "commands": {
+        "windows": {
+            "copy": {
+                "cmd": ["copy"]
+            },
+            "stylecop": {
+                "cmd": ["${package}/stylecop"]
+            },
+            "build_solution": {
+                "cmd": ["C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\xbuild.bat"]
+            }
+        },
+        "osx": {
+            "copy": {
+                "cmd": ["cp", "-v", "-r"],
+                "error_regex": "^cp:\\s*(?P<message>.*)$",
+                "warning_regex": "^cp:\\s*(?P<message>.*)$"
+            },
+            "mono": {
+                "env": {
+                    "MONO_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib/mono/2.0",
+                    "LD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "DYLD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "MONO_IOMAP": "case"
+                },
+                "cmd": ["/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/bin/mono", "--debug", "--debug=casts"],
+                "error_regex": "^DONT_MATCH$",
+                "warning_regex": "^DONT_MATCH$",
+                "message_regex": "^\\s*(?P<message>.*)\\s*$"
+            },
+            "stylecop": {
+                "env": {
+                    "MONO_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib/mono/2.0",
+                    "LD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "DYLD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "MONO_IOMAP": "case"
+                },
+                "cmd": ["/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/bin/mono", "${package}/stylecop/StyleCop.exe"],
+                "error_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*error\\:\\s*(?P<message>.*)$",
+                "warning_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*warning\\:\\s*(?P<message>.*)$"
+            },
+            "build_solution": {
+                "cmd": ["/Applications/MonoDevelop.app/Contents/MacOS/mdtool",
+                        "build",
+                        "--target:${task:Build}",
+                        "--configuration:${configuration}"],
+                "error_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\):\\s*)?error\\s(?P<message>.*)$",
+                "warning_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\):\\s*)?warning\\s(?P<message>.*)$"
+            },
+            "build_solution_xbuild": {
+                "cmd": ["/Applications/Unity/MonoDevelop.app/Contents/Frameworks/Mono.framework/Commands/xbuild",
+                        "/noconsolelogger",
+                        "/t:${task:Build}",
+                        "/logger:${package}/SublimeLogger.dll",
+                        "/p:Configuration=${configuration}"],
+                "error_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*error\\:\\s*(?P<message>.*)$",
+                "warning_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*warning\\:\\s*(?P<message>.*)$"
+            }
+        },
+        "linux": {
+            "stylecop": {
+                "cmd": ["${package}/stylecop"]
+            },
+            "copy": ["cp"],
+            "xbuild": ["xbuild"]
+        }
+    }
+}
+
+// The settings in the project file:
+/*{
+}
+
+{
+    "windows": {
+        "cmd": [
+            "C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\xbuild.bat",
+            "${project_path}\\\\${project_base_name}-csharp.sln",
+            "/noconsolelogger",
+            "/logger:${packages}\\Unity3D Build System\\SublimeLogger.dll"
+        ],
+    },
+    "osx": {
+        "cmd": [
+            "${packages}\\Unity3D Build System\\SublimeLogger.dll",
+            "/Users/pschulze/.local/scripts/xbuild",
+            "${folder}/../Unity-csharp.sln"
+        ],
+        "file_regex": "^([\\d\\w:/\\.-]*)\\((\\d+),(\\d+)\\)\\s*(.*)$",
+        "working_dir": "${folder}"
+    },
+    "variants": [
+        {
+            "name": "Clean",
+            "windows": {
+                "cmd": [
+                    "C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\xbuild.bat",
+                    "${project_path}\\\\${project_base_name}-csharp.sln",
+                    "/target:Clean",
+                    "/noconsolelogger",
+                    "/logger:${packages}\\Unity3D Build System\\SublimeLogger.dll"
+                ]
+            },
+            "osx": {
+                "cmd": [
+                    "/Applications/Unity/MonoDevelop.app/Contents/Frameworks/Mono.framework/Commands/xbuild",
+                    "${project_path}/${project_base_name}-csharp.sln",
+                    "/target:Clean",
+                    "/noconsolelogger",
+                    "/logger:${packages}/Unity3D Build System/SublimeLogger.dll"
+                ]
+            }
+        }
+    ]
+}*/
+

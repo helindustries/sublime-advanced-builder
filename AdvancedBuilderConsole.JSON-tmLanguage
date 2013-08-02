@@ -1,0 +1,13 @@
+{ "name": "AdvancedBuilderConsole",
+  "scopeName": "source.abconsole",
+  "fileTypes": [""],
+  "patterns": [
+      { "name": "console.warning.abconsole",
+        "match": "^\\[WARNING\\].*"
+      },
+      { "name": "console.error.abconsole",
+        "match": "^\\[ERROR\\].*"
+      }
+  ],
+  "uuid": "3b19994b-413b-48b2-bc3d-91f3a2ec1bcd"
+}

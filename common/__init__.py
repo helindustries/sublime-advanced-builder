@@ -1,4 +1,9 @@
-__all__ = ["BuildPhase", "AdvancedBuilderSettings"]
+__all__ = ["BuildPhase", "AdvancedBuilderSettings", "printcons"]
 
-from build_phase import BuildPhase
-from settings import AdvancedBuilderSettings
+import sublime
+if int(sublime.version()) < 3000:
+    from build_phase import BuildPhase
+    from settings import AdvancedBuilderSettings
+else:
+    from .build_phase import BuildPhase
+    from .settings import AdvancedBuilderSettings
