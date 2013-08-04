@@ -133,8 +133,6 @@ class AsyncBuildProcess(object):
             else:
                 proc_env[k] = os.path.expandvars(proc_env[k]).encode(sys.getfilesystemencoding())
 
-        print(repr(proc_env))
-
         if shell_cmd and sys.platform == "win32":
             # Use shell=True on Windows, so shell_cmd is passed through with the correct escaping
             self.proc = subprocess.Popen(shell_cmd, stdout=subprocess.PIPE,
