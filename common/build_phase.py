@@ -26,12 +26,8 @@
 The basis for all build phases
 """
 import sublime
-if int(sublime.version()) < 3000:
-    def printcons(*msg):
-        print " ".join(str(x) for x in msg)
-else:
-    def printcons(*msg):
-        print(" ".join(str(x) for x in msg))
+def printcons(*msg):
+    print(" ".join(str(x) for x in msg))
 
 class BuildPhase(object):
     """

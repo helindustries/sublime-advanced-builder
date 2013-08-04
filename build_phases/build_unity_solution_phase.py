@@ -33,12 +33,10 @@ from . import BuildSolutionPhase
 
 if int(sublime.version()) < 3000:
     from common import BuildPhase
-    def printcons(*msg):
-        print " ".join(str(x) for x in msg)
 else:
     from ..common import BuildPhase
-    def printcons(*msg):
-        print(" ".join(str(x) for x in msg))
+def printcons(*msg):
+    print(" ".join(str(x) for x in msg))
 
 unity_dll_locations = [
     ["Library", "ScriptAssemblies", "Assembly-CSharp.dll"],

@@ -41,13 +41,11 @@ import sublime_plugin
 if int(sublime.version()) < 3000:
     from common import AdvancedBuilderSettings
     from build_phases import BuildSolutionPhase, BuildUnitySolutionPhase, CopyFilesPhase, StyleCopPhase, RunCommandPhase
-    def printcons(*msg):
-        print " ".join(str(x) for x in msg)
 else:
     from .common import AdvancedBuilderSettings
     from .build_phases import BuildSolutionPhase, BuildUnitySolutionPhase, CopyFilesPhase, StyleCopPhase, RunCommandPhase
-    def printcons(*msg):
-        print(" ".join(str(x) for x in msg))
+def printcons(*msg):
+    print(" ".join(str(x) for x in msg))
 
 supported_build_phases = {
     "solution": BuildSolutionPhase,
