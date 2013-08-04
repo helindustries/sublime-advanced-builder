@@ -46,7 +46,7 @@
                         "/noconsolelogger",
                         "/logger:${package}\\SublimeLogger.dll"],
                 "error_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s+error):(?P<message>.*)$",
-                "warning_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s+warning):(?P<message>.*)$",
+                "warning_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s+warning):(?P<message>.*)$"
             }
         },
         "osx": {
