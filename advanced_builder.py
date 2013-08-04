@@ -128,7 +128,12 @@ class AsyncBuildProcess(object):
         proc_env.update(env)
         for k in proc_env:
             printcons("expanding ", k)
-            proc_env[k] = os.path.expandvars(proc_env[k]).encode(sys.getfilesystemencoding())
+            if sys.platform == "win32":
+                proc_env[k] = os.path.expandvars(proc_env[k])
+            else:
+                proc_env[k] = os.path.expandvars(proc_env[k]).encode(sys.getfilesystemencoding())
+
+        print(repr(proc_env))
 
         if shell_cmd and sys.platform == "win32":
             # Use shell=True on Windows, so shell_cmd is passed through with the correct escaping
@@ -302,15 +307,15 @@ class OutputWindowController(ProcessListener):
             self.proc = AsyncBuildProcess(cmd, shell_cmd, merged_env, self, working_dir = working_dir, **kwargs)
             self._running = True
         except(err_type) as exc:
-            self.append_data(None, str(exc) + "\n")
-            self.append_data(None, "[cmd:  " + str(cmd) + "]\n")
-            self.append_data(None, "[dir:  " + str(os.getcwdu()) + "]\n")
+            self.write(str(exc))
+            self.write("[cmd:  " + str(cmd) + "]")
+            self.write("[dir:  " + str(os.getcwd()) + "]")
             if "PATH" in merged_env:
-                self.append_data(None, "[path: " + str(merged_env["PATH"]) + "]\n")
+                self.write("[path: " + str(merged_env["PATH"]) + "]")
             else:
-                self.append_data(None, "[path: " + str(os.environ["PATH"]) + "]\n")
+                self.write("[path: " + str(os.environ["PATH"]) + "]")
             if not self.quiet:
-                self.append_data(None, "[Finished]")
+                self.write("[Finished]")
 
     def is_enabled(self, kill = False):
         if kill:
