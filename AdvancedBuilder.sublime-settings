@@ -10,13 +10,43 @@
     "commands": {
         "windows": {
             "copy": {
-                "cmd": ["copy"]
+                "cmd": ["copy", "/Y"]
             },
             "stylecop": {
-                "cmd": ["${package}/stylecop"]
+                "env": {
+                    "MONO_PATH": "C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\lib:C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\lib\\mono\\2.0",
+                    "MONO_IOMAP": "case"
+                },
+                "cmd": ["C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\mono.exe", "${package}/stylecop/StyleCop.exe"],
+                "error_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*error\\:\\s*(?P<message>.*)$",
+                "warning_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*warning\\:\\s*(?P<message>.*)$"
+            },
+            "mono": {
+                "env": {
+                    "MONO_PATH": "C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\lib:C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\lib\\mono\\2.0",
+                    "MONO_IOMAP": "case"
+                },
+                "cmd": ["C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\mono.exe"],
+                "error_regex": "^DONT_MATCH$",
+                "warning_regex": "^DONT_MATCH$",
+                "message_regex": "^\\s*(?P<message>.*)\\s*$"
+            },
+            "build_solution_mdtool": {
+                "cmd": ["C:\\Program Files (x86)\\Unity\\MonoDevelop\\bin\\mdtool",
+                        "build",
+                        "--target:${task:Build}",
+                        "--configuration:${configuration}"],
+                "error_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\):\\s*)?error\\s(?P<message>.*)$",
+                "warning_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\):\\s*)?warning\\s(?P<message>.*)$"
             },
             "build_solution": {
-                "cmd": ["C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\xbuild.bat"]
+                "cmd": ["C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\xbuild.bat",
+                        "/target:${task:Build}",
+                        "/property:Configuration=${configuration}",
+                        "/noconsolelogger",
+                        "/logger:${package}\\SublimeLogger.dll"],
+                "error_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s+error):(?P<message>.*)$",
+                "warning_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s+warning):(?P<message>.*)$",
             }
         },
         "osx": {
@@ -75,51 +105,3 @@
         }
     }
 }
-
-// The settings in the project file:
-/*{
-}
-
-{
-    "windows": {
-        "cmd": [
-            "C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\xbuild.bat",
-            "${project_path}\\\\${project_base_name}-csharp.sln",
-            "/noconsolelogger",
-            "/logger:${packages}\\Unity3D Build System\\SublimeLogger.dll"
-        ],
-    },
-    "osx": {
-        "cmd": [
-            "${packages}\\Unity3D Build System\\SublimeLogger.dll",
-            "/Users/pschulze/.local/scripts/xbuild",
-            "${folder}/../Unity-csharp.sln"
-        ],
-        "file_regex": "^([\\d\\w:/\\.-]*)\\((\\d+),(\\d+)\\)\\s*(.*)$",
-        "working_dir": "${folder}"
-    },
-    "variants": [
-        {
-            "name": "Clean",
-            "windows": {
-                "cmd": [
-                    "C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\xbuild.bat",
-                    "${project_path}\\\\${project_base_name}-csharp.sln",
-                    "/target:Clean",
-                    "/noconsolelogger",
-                    "/logger:${packages}\\Unity3D Build System\\SublimeLogger.dll"
-                ]
-            },
-            "osx": {
-                "cmd": [
-                    "/Applications/Unity/MonoDevelop.app/Contents/Frameworks/Mono.framework/Commands/xbuild",
-                    "${project_path}/${project_base_name}-csharp.sln",
-                    "/target:Clean",
-                    "/noconsolelogger",
-                    "/logger:${packages}/Unity3D Build System/SublimeLogger.dll"
-                ]
-            }
-        }
-    ]
-}*/
-

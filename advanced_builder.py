@@ -127,7 +127,6 @@ class AsyncBuildProcess(object):
         proc_env = os.environ.copy()
         proc_env.update(env)
         for k in proc_env:
-            printcons("expanding ", k)
             if sys.platform == "win32":
                 proc_env[k] = os.path.expandvars(proc_env[k])
             else:
@@ -473,7 +472,7 @@ class OutputWindowController(ProcessListener):
 
     def get_relative_path(self, working_dir, path):
         common_prefix = os.path.commonprefix([working_dir, path])
-        return os.path.relpath(path, common_prefix)
+        return os.path.relpath(path, common_prefix).replace(os.path.sep, "/")
 
     def finish(self, proc):
         if proc != self.proc:
