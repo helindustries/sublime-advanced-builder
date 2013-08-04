@@ -77,9 +77,11 @@ class BuildSolutionPhase(BuildPhase):
         else:
             path = self.settings.expand_placeholders(path)
 
+        path = path.replace(os.path.sep, "/")
         if(not path.endswith("/")):
             path += "/"
 
+        print("%s config: %s task: %s path: %s active_file: %s" % (self.name, self.check_configuration(), self.check_task(), path, self.settings.active_file()))
         return self.check_configuration() and self.check_task() \
                 and (path is None or self.settings.active_file().startswith(path))
 
@@ -101,7 +103,7 @@ class BuildSolutionPhase(BuildPhase):
 
         solution_path = self.settings.expand_placeholders(self._solution)
         common_prefix = os.path.commonprefix([command["working_dir"], solution_path])
-        solution_path = os.path.relpath(solution_path, common_prefix)
+        solution_path = os.path.relpath(solution_path, common_prefix).replace(os.path.sep, "/")
         command_list.append(solution_path)
 
         command["cmd"] = command_list
@@ -145,7 +147,7 @@ class BuildSolutionPhase(BuildPhase):
             project_path = project_path.replace("\\", os.path.sep)
 
             # Make the path be relative to the solution directory and parse it
-            project_path = os.path.join(solution_dir, project_path)
+            project_path = os.path.join(solution_dir, project_path).replace(os.path.sep, "/")
             if(not self.settings.quiet()):
                 pass
             printcons("Found Project:", project_path)
@@ -174,7 +176,7 @@ class BuildSolutionPhase(BuildPhase):
             opath = self.element_path(output_path)
             opath = os.path.join(project_dir, opath)
             for target in targets:
-                assembly_path = os.path.join(opath, target)
+                assembly_path = os.path.join(opath, target).replace(os.path.sep, "/")
                 if not self.settings.quiet():
                     pass
                 printcons("Found output assembly:", assembly_path)
@@ -191,7 +193,7 @@ class BuildSolutionPhase(BuildPhase):
                 continue
 
             ref_path = self.element_path(hints[0])
-            ref_path = os.path.join(project_dir, ref_path)
+            ref_path = os.path.join(project_dir, ref_path).replace(os.path.sep, "/")
             if not self.settings.quiet():
                 pass
             printcons("Found referenced assembly:", ref_path)

@@ -63,7 +63,7 @@ class BuildUnitySolutionPhase(BuildSolutionPhase):
         # Add the Unity3D script assemblies from their final location
         project_dir = os.path.dirname(project)
         for dll in unity_dll_locations:
-            opath = os.path.join(project_dir, *dll)
+            opath = os.path.join(project_dir, *dll).replace(os.path.sep, "/")
             if(os.path.isfile(opath)):
                 self.add_assembly(opath)
 

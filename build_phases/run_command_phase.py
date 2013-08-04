@@ -68,6 +68,7 @@ class RunCommandPhase(BuildPhase):
         path = self.path_selector
         if(path is not None):
             path = self.settings.expand_placeholders(self.path_selector)
+            path = path.replace(os.path.sep, "/")
             if(not path.endswith("/")):
                 path += "/"
 

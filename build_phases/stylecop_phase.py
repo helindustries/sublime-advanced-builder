@@ -93,6 +93,7 @@ class StyleCopPhase(BuildPhase):
             path = self._path
 
         path = self.settings.expand_placeholders(path)
+        path = path.replace(os.path.sep, "/")
         if(not path.endswith("/")):
             path += "/"
 
@@ -112,7 +113,7 @@ class StyleCopPhase(BuildPhase):
                 # parent or current directory, just skip
                 continue
 
-            full_path = os.path.join(path, entry)
+            full_path = os.path.join(path, entry).replace(os.path.sep, "/")
             if(self._match_skip_filter(full_path)):
                 continue
 
@@ -149,7 +150,7 @@ class StyleCopPhase(BuildPhase):
         command = command.copy()
         command_list = list(command["cmd"])
         command_list.append("-xml")
-        command_list.append(os.path.join(path, "Violations.stylecop"))
+        command_list.append(os.path.join(path, "Violations.stylecop").replace(os.path.sep, "/"))
         command_list.append("-settings")
         command_list.append(self.settings.expand_placeholders(self._settings_file))
         command_list += self._find_files(path)
@@ -163,7 +164,7 @@ class StyleCopPhase(BuildPhase):
         Called, when the task is completed.
         """
         path = self.settings.expand_placeholders(self._path)
-        path = os.path.join(path, "Violations.stylecop")
+        path = os.path.join(path, "Violations.stylecop").replace(os.path.sep, "/")
         has_violations = self.print_violations(path, window_controller)
         if(os.path.isfile(path)):
             os.remove(path);

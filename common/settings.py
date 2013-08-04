@@ -118,7 +118,7 @@ class AdvancedBuilderSettings(object):
         self.project_settings = window.active_view().settings()
         self.build_settings = build_settings
         self._project = None
-        self._active_file = window.active_view().file_name()
+        self._active_file = window.active_view().file_name().replace(os.path.sep, "/")
         self._init_commands()
         self._init_build_phases()
         self._init_package_defaults()
@@ -296,7 +296,7 @@ class AdvancedBuilderSettings(object):
             if self._project_path is None:
                 self._project_path = self.build_settings.get("working_dir")
 
-            self._project_file = os.path.join(self._project_path, self._window.project_file_name())
+            self._project_file = os.path.join(self._project_path, self._window.project_file_name()).replace(os.path.sep, "/")
             if not os.path.isfile(self._project_file):
                 self._project_file = None
         else:
@@ -304,7 +304,7 @@ class AdvancedBuilderSettings(object):
 
         self._current_folder = None
         self._scanned_folders = []
-        self._package_path = os.path.join(sublime.packages_path(), "Advanced Build System")
+        self._package_path = os.path.join(sublime.packages_path(), "Advanced Build System").replace(os.path.sep, "/")
 
         for folder in self._window.folders():
             if(self._project_file is None):
@@ -347,7 +347,7 @@ class AdvancedBuilderSettings(object):
             if(entry == ".") or (entry == ".."):
                 continue
 
-            entry_path = os.path.join(path, entry)
+            entry_path = os.path.join(path, entry).replace(os.path.sep, "/")
             if(os.path.isdir(entry_path)):
                 found = self._find_project_downwards(entry_path, remaining_depth - 1)
                 if(found is not None):
@@ -384,7 +384,7 @@ class AdvancedBuilderSettings(object):
         value = re.sub(r'\${configuration}', self.active_configuration(), value)
         value = re.sub(r'\${package}', self._package_path, value)
         value = re.sub(r'\${task:(?P<variable>[^}]+)}', lambda m: m.group("variable") if self.active_task() is None else self.active_task(), value)
-        value = value.replace('\\', '/')
+        value = value.replace(os.path.sep, '/')
 
         return value
 
