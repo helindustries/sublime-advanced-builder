@@ -127,7 +127,7 @@ class AsyncBuildProcess(object):
         proc_env = os.environ.copy()
         proc_env.update(env)
         for k in proc_env:
-            if sys.platform == "win32":
+            if sys.platform == "win32" and int(sublime.version()) >= 3000:
                 proc_env[k] = os.path.expandvars(proc_env[k])
             else:
                 proc_env[k] = os.path.expandvars(proc_env[k]).encode(sys.getfilesystemencoding())
