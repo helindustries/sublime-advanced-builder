@@ -352,6 +352,19 @@ class OutputWindowController(ProcessListener):
             printcons(message)
         self.append_data(self.proc, (message + "\n").encode(self.encoding))
 
+    def casify_path(self, path):
+        path = os.path.abspath(path)
+        ref_path_elements = path.split(os.path.sep)
+        for i, e in enumerate(ref_path_elements):
+            ls = os.path.sep.join(ref_path_elements[:i + 1])
+            if ls.strip() == "":
+                continue
+            for d in os.listdir(os.path.dirname(ls)):
+                if d.lower() == e:
+                    ref_path_elements[i] = d;
+                    break;
+        return os.path.sep.join(ref_path_elements)
+
     def _build_message(self, proc, importance, **kwargs):
         message = ""
         # Add the importance to the arguments
@@ -362,6 +375,13 @@ class OutputWindowController(ProcessListener):
         path = kwargs.get("file")
         if(path is not None):
             # There is a path, make sure it is relative
+            winpath_match = self.winpath_re.match(path)
+            if(winpath_match is not None):
+                path = winpath_match.groupdict()["path"]
+                path = os.path.sep + path.replace("\\", os.path.sep) + os.path.sep
+                printcons("WinPath %s relative to %s" % (path, self.working_dir))
+
+            path = self.casify_path(path)
             path = self.get_relative_path(self.working_dir, path)
             kwargs["file"] = path
 
@@ -371,6 +391,9 @@ class OutputWindowController(ProcessListener):
             column = kwargs.get("column")
 
             if(line is not None):
+                if(importance is None):
+                    message = "[INFO]:" + message
+
                 if(column is None):
                     # Use 0 as default column for jump-to-line support
                     kwargs["column"] = 0
