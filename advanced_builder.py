@@ -90,18 +90,22 @@ class AsyncBuildProcess(object):
         self.error_regex = value_or_default(kwargs, "error_regex", None, None)
         self.warning_regex = value_or_default(kwargs, "warning_regex", None, None)
         self.message_regex = value_or_default(kwargs, "message_regex", None, None)
+        self.hide_regex = value_or_default(kwargs, "hide_regex", None, None)
         self.line_regex = value_or_default(kwargs, "line_regex", None, None)
         self.warnings_as_errors = value_or_default(kwargs, "warnings_as_errors", bool, False)
+        self.allow_hide_errors = value_or_default(kwargs, "allow_hide_errors", bool, False)
         self.completion_callback = kwargs.get("completion_callback")
 
         if self.error_regex is not None:
-            self.error_re = re.compile(self.error_regex, re.UNICODE)
+            self.error_re = self.make_re(self.error_regex)
         if self.warning_regex is not None:
-            self.warning_re = re.compile(self.warning_regex, re.UNICODE)
+            self.warning_re = self.make_re(self.warning_regex)
         if self.message_regex is not None:
-            self.message_re = re.compile(self.message_regex, re.UNICODE)
+            self.message_re = self.make_re(self.message_regex)
         if self.line_regex is not None:
-            self.line_re = re.compile(self.line_regex, re.UNICODE)
+            self.line_re = self.make_re(self.line_regex)
+        if self.hide_regex is not None:
+            self.hide_re = self.make_re(self.hide_regex)
 
         # The output buffer, because the regex matching will require full lines
         self.buffer = ""
@@ -159,6 +163,12 @@ class AsyncBuildProcess(object):
 
         if self.proc.stderr:
             threading.Thread(target=self.read_stderr).start()
+
+    def make_re(self, expr):
+        if type(expr) is list:
+            return [re.compile(regex, re.UNICODE) for regex in expr]
+        else:
+            return re.compile(expr, re.UNICODE)
 
     def kill(self):
         if not self.killed:
