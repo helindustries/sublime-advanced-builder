@@ -136,6 +136,11 @@ class AsyncBuildProcess(object):
             else:
                 proc_env[k] = os.path.expandvars(proc_env[k]).encode(sys.getfilesystemencoding())
 
+        if shell_cmd:
+            printcons("Executing %s" % shell_cmd)
+        else:
+            printcons("Executing %s" % " ".join(cmd))
+
         if shell_cmd and sys.platform == "win32":
             # Use shell=True on Windows, so shell_cmd is passed through with the correct escaping
             self.proc = subprocess.Popen(shell_cmd, stdout=subprocess.PIPE,
@@ -303,6 +308,7 @@ class OutputWindowController(ProcessListener):
         # Change to the working dir, rather than spawning the process with it,
         # so that emitted working dir relative path names make sense
         if working_dir != "":
+            printcons("Changing to " + working_dir)
             os.chdir(working_dir)
 
         err_type = OSError
@@ -346,7 +352,7 @@ class OutputWindowController(ProcessListener):
         # Add the importance to the arguments
         if(importance is not None):
             kwargs["importance"] = importance
-            message = "[%(importance)s]"
+            message = "[%(importance)s]:"
 
         path = kwargs.get("file")
         if(path is not None):
