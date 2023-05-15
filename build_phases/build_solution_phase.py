@@ -149,6 +149,10 @@ class BuildSolutionPhase(BuildPhase):
             project_path = os.path.join(solution_dir, project_path).replace(os.path.sep, "/")
             if(not self.settings.quiet()):
                 pass
+
+            if not os.path.isfile(project_path):
+                continue;
+
             printcons("Found Project:", project_path)
             self.parse_project(project_path)
 

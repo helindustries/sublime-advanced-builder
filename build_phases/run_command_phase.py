@@ -26,6 +26,7 @@
 A build phase to run arbitrary commands
 """
 import sublime
+import os
 
 if int(sublime.version()) < 3000:
     from common import BuildPhase
@@ -50,7 +51,7 @@ class RunCommandPhase(BuildPhase):
 
         if(self._command is None):
             self._invalidate("Mandatory setting 'command' missing")
-        if(isinstance(self._command, dict)) and (not self._command.has("cmd")):
+        if(isinstance(self._command, dict)) and ("cmd" not in self._command):
             self._invalidate("Malformed setting 'command'")
         if(isinstance(self._command, list)) and (len(self._command) < 1):
             self._invalidate("Malformed setting 'command'")
@@ -116,13 +117,20 @@ class RunCommandPhase(BuildPhase):
         if(command is None):
             # Not a predefined command, take it as is.
             # Don't fall back to defaults for additional flexibility
-            return self._command
+            command = self._command.copy()
+            if("working_dir" in command):
+                command["working_dir"] = self.settings.expand_placeholders(command["working_dir"])
+
+            return command
 
         # a predefined command, replace necessary structures.
         command = command.copy()
         command_list = list(command["cmd"]) + self._command["cmd"][1:]
         command.update(self._command)
         command["cmd"] = command_list
+
+        if("working_dir" in command):
+            command["working_dir"] = self.settings.expand_placeholders(command["working_dir"])
 
         return command
 
