@@ -240,8 +240,8 @@ class OutputWindowController(ProcessListener):
                 self.working_dir = folder
                 break;
 
-        self.output_view.settings().set("result_file_regex", "^\[[A-Z\s_]+\]: ([\/\d\s\w:\\\.-]*) \((\d+), (\d+)\):\s.*$")
-        self.output_view.settings().set("result_line_regex", "^.*\((\d+), (\d+)\).*$")
+        self.output_view.settings().set("result_file_regex", "^\[[A-Z\s_]+\]: ([a-zA-Z0-9\\\/\s\:\._-]+)\s\((\d+),\s(\d+)\):\s.*$")
+        self.output_view.settings().set("result_line_regex", "^.*\((\d+),\s(\d+)\).*$")
         self.output_view.settings().set("result_base_dir", self.working_dir)
 
         if int(sublime.version()) < 3000:
@@ -361,7 +361,7 @@ class OutputWindowController(ProcessListener):
             kwargs["file"] = path
 
             # Add the file information and look for lines
-            message += ": %(file)s"
+            message += " %(file)s"
             line = kwargs.get("line")
             column = kwargs.get("column")
 
@@ -373,9 +373,14 @@ class OutputWindowController(ProcessListener):
                 # Add the file and line placeholders to the message
                 message += " (%(line)s, %(column)s):"
 
-        message += " %(message)s"
+        for message_pos in ["message_pre", "message", "message_post"]:
+            if(kwargs.get(message_pos) is not None):
+                message += " %(" + message_pos + ")s"
+
         message = message.strip()
-        return message % kwargs
+        message = message % kwargs
+        message = message.replace("$n$", " ")
+        return message
 
     def write_to_view(self, edit, message, focus, **args):
         #printcons(message)
@@ -397,6 +402,15 @@ class OutputWindowController(ProcessListener):
                 self.output_view.show(self.output_view.size())
             self.output_view.end_edit(edit)
             self.output_view.set_read_only(True)
+
+    def match_line(self, line, expr):
+        if(type(expr) is list):
+            for regex in expr:
+                match = regex.match(line)
+                if(match is not None):
+                    return match
+        else:
+            return expr.match(line);
 
     def append_data(self, proc, data):
         if(proc is not None) and (proc != self.proc):
@@ -443,52 +457,97 @@ class OutputWindowController(ProcessListener):
                 proc.skip_lines -= 1
                 continue
 
-            if(proc.error_regex is not None):
-                # got an error regex, match it
-                err_match = proc.error_re.match(line)
+            if(line == ""):
+                # The temporary buffer is empty, just start processing a new line
+                continue
 
-                if(err_match is not None):
-                    printcons("Error in: %s" % line.strip())
-                    error_data = err_match.groupdict()
-                    self.has_errors = True
-                    line = self._build_message(proc, "ERROR", **error_data)
-                    self.write_to_view(edit, line + "\n", selection_was_at_end)
+            if(proc.line_regex is not None):
+                line_match = self.match_line(line, proc.line_re)
+                if(line_match is not None):
+                    # This is still a new part of the line
+                    line_data = line_match.groupdict()
+                    line_message = "$n$" + self._build_message(proc, None, **line_data)
+                    printcons(line_message)
+                    self.temp_str += line_message
                     continue
 
-            if(proc.warning_regex is not None):
-                # got a warning regex
-                warn_match = proc.warning_re.match(line)
-
-                if(warn_match is not None):
-                    printcons("Warning in: %s" % line.strip())
-                    warning_data = warn_match.groupdict()
-
-                    if(proc.warnings_as_errors):
-                        self.has_errors = True
-                        line = self._build_message(proc, "ERROR", **warning_data)
-                    else:
-                        line = self._build_message(proc, "WARNING", **warning_data)
-
-                    self.write_to_view(edit, line + "\n", selection_was_at_end)
-                    continue
-
-            if(proc.message_regex is not None):
-                # got an error regex, match it
-                msg_match = proc.message_re.match(line)
-
-                if(msg_match is not None):
-                    line = self._build_message(proc, None, **msg_match.groupdict())
-                    self.write_to_view(edit, line + "\n", selection_was_at_end)
-                    continue
-
-            if(not self.quiet):
-                self.write_to_view(edit, line + "\n", selection_was_at_end)
+            self.process_line(edit, proc, self.temp_str, selection_was_at_end)
+            self.temp_str = line
 
         self.end_edit(edit, selection_was_at_end)
 
+    def process_line(self, edit, proc, line, selection_was_at_end):
+        hide = False
+        if(proc.hide_regex is not None):
+            # check, if the message needs to be hidden
+            hide_match = self.match_line(line, proc.hide_re)
+            if(hide_match is not None):
+                hide = True
+
+        if(not hide):
+            printcons(line)
+
+        if(proc.error_regex is not None):
+            # got an error regex, match it
+            err_match = self.match_line(line, proc.error_re)
+
+            if(err_match is not None):
+                self.has_errors = True
+                if(not proc.allow_hide_errors or not hide):
+                    printcons("Error in: %s" % line.strip())
+                    error_data = err_match.groupdict()
+                    line = self._build_message(proc, "ERROR", **error_data)
+                    self.write_to_view(edit, line + "\n", selection_was_at_end)
+
+                return
+
+        if(proc.warning_regex is not None):
+            # got a warning regex
+            warn_match = self.match_line(line, proc.warning_re)
+
+            if(warn_match is not None):
+                warning_data = warn_match.groupdict()
+
+                if(proc.warnings_as_errors):
+                    self.has_errors = True
+                    if(not proc.allow_hide_errors or not hide):
+                        printcons("Warning in: %s" % line.strip())
+                        line = self._build_message(proc, "ERROR", **warning_data)
+                        self.write_to_view(edit, line + "\n", selection_was_at_end)
+                elif(not hide):
+                    printcons("Warning in: %s" % line.strip())
+                    line = self._build_message(proc, "WARNING", **warning_data)
+                    self.write_to_view(edit, line + "\n", selection_was_at_end)
+
+                return
+
+        if(proc.message_regex is not None):
+            # got an error regex, match it
+            msg_match = self.match_line(line, proc.message_re)
+
+            if(msg_match is not None):
+                if(not hide):
+                    printcons("Message in: %s" % line.strip())
+                    line = self._build_message(proc, None, **msg_match.groupdict())
+                    self.write_to_view(edit, line + "\n", selection_was_at_end)
+
+                return
+
+        if(not self.quiet):
+            self.write_to_view(edit, line + "\n", selection_was_at_end)
+
+    def finish_data(self, proc):
+        selection_was_at_end = (len(self.output_view.sel()) == 1
+            and self.output_view.sel()[0]
+                == sublime.Region(self.output_view.size()))
+        edit = self.begin_edit();
+        self.process_line(edit, proc, self.temp_str, selection_was_at_end)
+        self.end_edit(edit, selection_was_at_end)
+
     def get_relative_path(self, working_dir, path):
-        common_prefix = os.path.commonprefix([working_dir, path])
-        return os.path.relpath(path, common_prefix).replace(os.path.sep, "/")
+        return os.path.relpath(path, working_dir)
+        #common_prefix = os.path.commonprefix([working_dir, path])
+        #return os.path.relpath(path, common_prefix).replace(os.path.sep, "/")
 
     def finish(self, proc):
         if proc != self.proc:

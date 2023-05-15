@@ -2,7 +2,7 @@
 {
     "configuration": "Release",
     "working_dir": "${project_path:${folder}}",
-    "file_regex": "^([\\d\\w:\\\\\\.-]*)\\((\\d+),(\\d+)\\)\\s*(.*)$",
+    "file_regex": "^([\\d\\w:\\/\\\\\\.-]*)\\((\\d+),(\\d+)\\)\\s*(.*)$",
     "target": "advanced_builder",
     "quiet": true,
     "variants": [
