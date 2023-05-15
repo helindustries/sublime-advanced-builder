@@ -1,0 +1,19 @@
+[
+    {
+        "caption": "Tools",
+        "mnemonic": "t",
+        "id": "tools",
+        "children":
+        [
+            {
+                "id": "show_advanced_build",
+                "caption": "Show Advanced Build Console",
+                "command": "show_panel",
+                "args":
+                {
+                    "panel": "output.advanced_builder"
+                }
+            }
+        ]
+    }
+]
