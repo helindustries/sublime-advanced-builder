@@ -222,10 +222,15 @@ class AsyncBuildProcess(object):
                 self.proc.stderr.close()
                 break
 
+    def write_stdin(self, data):
+        os.write(self.proc.stderr.fileno(), data)
+
 class OutputWindowController(ProcessListener):
     def init(self, command, task, encoding = "utf-8", quiet = False, jump_to_error = True, syntax = "Packages/Advanced Build System/AdvancedBuilderConsole.tmLanguage"):
         self.window = command.window
         self.task = task
+        self.winpath_re = re.compile("^[a-zA-Z]+:\\\\(?P<path>.*)$")
+        self.temp_str = ""
 
         if not hasattr(self, 'output_view'):
             # Try not to call get_output_panel until the regexes are assigned
@@ -561,9 +566,14 @@ class OutputWindowController(ProcessListener):
             if(proc.completion_callback(self)):
                 self.has_errors = True
 
+        self.finish_data(proc)
         self._running = False
 
     def done(self):
+        show_panel_on_build = sublime.load_settings("Preferences.sublime-settings").get("show_panel_on_build", True)
+        if show_panel_on_build:
+            self.window.run_command("show_panel", {"panel": "output.advanced_builder"})
+
         if int(sublime.version()) < 3000:
             edit = self.output_view.begin_edit()
             self.output_view.sel().clear()
@@ -589,6 +599,8 @@ class OutputWindowController(ProcessListener):
         sublime.status_message(message)
 
     def kill(self):
+        self.finish_data(self.proc)
+
         if self.proc is not None:
             self.proc.kill()
             self.proc = None
