@@ -41,7 +41,7 @@
             },
             "build_solution": {
                 "cmd": ["C:\\Program Files (x86)\\Unity\\Editor\\Data\\Mono\\bin\\xbuild.bat",
-                        "/target:${task:Build}",
+                        "/target:${task:Rebuild}",
                         "/property:Configuration=${configuration}",
                         "/noconsolelogger",
                         "/logger:${package}\\SublimeLogger.dll"],
@@ -57,29 +57,29 @@
             },
             "mono": {
                 "env": {
-                    "MONO_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib/mono/2.0",
-                    "LD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
-                    "DYLD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "MONO_PATH": "/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/lib:/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/lib/mono/2.0",
+                    "LD_LIBRARY_PATH": "/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "DYLD_LIBRARY_PATH": "/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
                     "MONO_IOMAP": "case"
                 },
-                "cmd": ["/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/bin/mono"],
+                "cmd": ["/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/bin/mono"],
                 "error_regex": "^DONT_MATCH$",
                 "warning_regex": "^DONT_MATCH$",
                 "message_regex": "^\\s*(?P<message>.*)\\s*$"
             },
             "stylecop": {
                 "env": {
-                    "MONO_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib/mono/2.0",
-                    "LD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
-                    "DYLD_LIBRARY_PATH": "/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "MONO_PATH": "/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/lib:/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/lib/mono/2.0",
+                    "LD_LIBRARY_PATH": "/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
+                    "DYLD_LIBRARY_PATH": "/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/lib:${env:LD_LIBRARY_PATH}",
                     "MONO_IOMAP": "case"
                 },
-                "cmd": ["/Applications/Unity/Unity.app/Contents/Frameworks/MonoBleedingEdge/bin/mono", "${package}/stylecop/StyleCop.exe"],
+                "cmd": ["/Applications/Unity-5/Unity-5.app/Contents/Frameworks/MonoBleedingEdge/bin/mono", "${package}/stylecop/StyleCop.exe"],
                 "error_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*error\\:\\s*(?P<message>.*)$",
                 "warning_regex": "^(?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\)\\s*warning\\:\\s*(?P<message>.*)$"
             },
             "build_solution": {
-                "cmd": ["/Applications/MonoDevelop.app/Contents/MacOS/mdtool",
+                "cmd": ["/Applications/Unity-5/MonoDevelop.app/Contents/MacOS/mdtool",
                         "build",
                         "--target:${task:Build}",
                         "--configuration:${configuration}"],
@@ -87,7 +87,7 @@
                 "warning_regex": "^[\\s\\t]*((?P<file>[\\/\\s\\d\\w:\\\\\\.-]*)\\((?P<line>\\d+),(?P<column>\\d+)\\):\\s*)?warning\\s(?P<message>.*)$"
             },
             "build_solution_xbuild": {
-                "cmd": ["/Applications/Unity/MonoDevelop.app/Contents/Frameworks/Mono.framework/Commands/xbuild",
+                "cmd": ["/Applications/Unity-5/MonoDevelop.app/Contents/Frameworks/Mono.framework/Commands/xbuild",
                         "/noconsolelogger",
                         "/t:${task:Build}",
                         "/logger:${package}/SublimeLogger.dll",
